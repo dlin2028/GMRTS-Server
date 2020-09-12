@@ -50,5 +50,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GMRTSClasses\GMRTSClasses.csproj">
+      <Project>{B2DBD442-7528-472C-8E01-413BD70A9010}</Project>
+      <Name>GMRTSClasses</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
