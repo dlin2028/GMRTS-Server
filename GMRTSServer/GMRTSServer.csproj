@@ -79,6 +79,11 @@
     <Compile Include="GameHub.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServersideUnits\Tank.cs" />
+    <Compile Include="ServersideUnits\Unit.cs" />
+    <Compile Include="UnitStates\IdleState.cs" />
+    <Compile Include="UnitStates\IUnitState.cs" />
+    <Compile Include="UnitStates\MoveState.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>

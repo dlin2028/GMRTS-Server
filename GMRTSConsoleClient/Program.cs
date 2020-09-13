@@ -26,9 +26,15 @@ namespace GMRTSConsoleClient
             ;
             ;
             Console.ReadLine();
+            client.OnPositionUpdate += Client_OnPositionUpdate;
             await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(100, 200) }, UnitIDs = new List<Guid> { Guid.NewGuid() } });
             await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(200, 100) }, UnitIDs = new List<Guid> { Guid.NewGuid() } });
             Console.ReadLine();
+        }
+
+        private static void Client_OnPositionUpdate(GMRTSClasses.Units.Unit arg1, GMRTSClasses.STCTransferData.ChangingData<Vector2> arg2)
+        {
+            Console.WriteLine($"{arg1.GetType().Name} {arg1.ID} is at {arg2.Value} traveling {arg2.Delta} per second");
         }
 
         private static void Program_a()

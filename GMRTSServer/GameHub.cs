@@ -30,6 +30,7 @@ namespace GMRTSServer
         public async Task Move(MoveAction act)
         {
             Console.WriteLine($"Moving {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Positions.First()}");
+            usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
         public override Task OnDisconnected(bool stopCalled)
@@ -38,13 +39,19 @@ namespace GMRTSServer
             return base.OnDisconnected(stopCalled);
         }
 
+        private void JoinGame(User user, Game game)
+        {
+            game.Users.Add(user);
+            user.CurrentGame = game;
+        }
+
         private void RemoveUser(string id)
         {
             if(usersFromIDs.ContainsKey(id))
             {
                 User user = usersFromIDs[id];
                 usersFromIDs.Remove(id);
-                user.CurrentGame.Users.Remove(user);
+                user.CurrentGame?.Users.Remove(user);
             }
         }
     }
