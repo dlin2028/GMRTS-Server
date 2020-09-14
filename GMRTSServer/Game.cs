@@ -1,4 +1,5 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.STCTransferData;
 
 using GMRTSServer.ServersideUnits;
 using GMRTSServer.UnitStates;
@@ -23,9 +24,17 @@ namespace GMRTSServer
 
         public IHubContext Context { get; set; }
 
+        public const float UnitSightRangeSquared = 100 * 100;
+
         //public Dictionary<User, List<Unit>> Units { get; set; } = new Dictionary<User, List<Unit>>();
         public Dictionary<Guid, Unit> Units { get; set; } = new Dictionary<Guid, Unit>();
         private long currentMillis = 0;
+
+        private void Remove(Unit unit)
+        {
+            unit.Owner.Units.Remove(unit);
+            Units.Remove(unit.ID);
+        }
 
         public void MoveIfCan(MoveAction action, User user)
         {
@@ -77,16 +86,83 @@ namespace GMRTSServer
             List<Guid> toKill = new List<Guid>();
             foreach (Unit unit in Units.Values)
             {
+                IList<string> userIDsToUpdate = GetRelevantUserIDs(unit);
+                IList<string> oldUserIDsToUpdate = unit.LastFrameVisibleUsers;
+                string[] newlyCanSee = userIDsToUpdate.Except(oldUserIDsToUpdate).ToArray();
+                string[] newlyCantSee = oldUserIDsToUpdate.Except(userIDsToUpdate).ToArray();
+                var clients = Context.Clients.Clients(userIDsToUpdate);
+                var newlyCanSeeClients = Context.Clients.Clients(newlyCanSee);
+                var newlyCantSeeClients = Context.Clients.Clients(newlyCantSee);
+
                 if(unit.UpdateHealth)
                 {
                     unit.UpdateHealth = false;
+                    clients.UpdateHealth(unit.ID, unit.HealthUpdate);
                 }
+                else
+                {
+                    newlyCanSeeClients.UpdateHealth(unit.ID, unit.HealthUpdate);
+                }
+
+                if(unit.Health <= 0)
+                {
+                    clients.KillUnit(unit.ID);
+                    toKill.Add(unit.ID);
+                }
+
+                if (unit.UpdatePosition)
+                {
+                    unit.UpdatePosition = false;
+                    clients.UpdatePosition(unit.ID, unit.PositionUpdate);
+                }
+                else
+                {
+                    newlyCanSeeClients.UpdatePosition(unit.ID, unit.PositionUpdate);
+                }
+
+                if (unit.UpdateRotation)
+                {
+                    unit.UpdateRotation = false;
+                    clients.UpdateRotation(unit.ID, unit.RotationUpdate);
+                }
+                else
+                {
+                    newlyCanSeeClients.UpdateRotation(unit.ID, unit.RotationUpdate);
+                }
+
+                newlyCantSeeClients.UpdatePosition(unit.ID, new ChangingData<Vector2>(0, new Vector2(-200, -200), new Vector2(0, 0)));
+            }
+
+            foreach(Guid id in toKill)
+            {
+                Remove(Units[id]);
             }
         }
 
+        //If this function turns out to be a performance bottleneck, let me (Peter) know. I have a plan involving breaking the map into grid squares.
         private IList<string> GetRelevantUserIDs(Unit unit)
         {
+            List<string> users = new List<string>(Users.Count);
+            users.Add(unit.Owner.ID);
 
+            foreach(User user in Users)
+            {
+                if(user == unit.Owner)
+                {
+                    continue;
+                }
+
+                foreach(Unit myUnit in user.Units)
+                {
+                    if ((myUnit.Position - unit.Position).LengthSquared() <= UnitSightRangeSquared)
+                    {
+                        users.Add(user.ID);
+                        break;
+                    }
+                }
+            }
+
+            return users;
         }
     }
 }
