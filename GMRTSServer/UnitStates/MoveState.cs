@@ -21,7 +21,8 @@ namespace GMRTSServer.UnitStates
         {
             if(Targets.Count == 0)
             {
-                //Update to have |v|=0
+                //Updates the relevant clients that |v|=0
+                Unit.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Unit.Position, Vector2.Zero);
                 return new IdleState();
             }
             Vector2 currTarg = Targets.Peek();
@@ -39,6 +40,7 @@ namespace GMRTSServer.UnitStates
             {
                 lastVel = velVec;
                 //Update clients
+                Unit.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Unit.Position, velVec);
             }
             return this;
         }

@@ -29,6 +29,10 @@ namespace GMRTSServer
 
         public async Task Move(MoveAction act)
         {
+            if(usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
             Console.WriteLine($"Moving {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Positions.First()}");
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
