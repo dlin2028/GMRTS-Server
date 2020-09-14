@@ -42,14 +42,14 @@ namespace GMRTSClasses
             hubProxy.On<UnitSpawnData>("AddUnit", AddUnit);
         }
 
-        public async Task JoinGameByName(string name)
+        public async Task JoinGameByName(string gameName, string userName)
         {
-            await hubProxy.Invoke("Join", name);
+            await hubProxy.Invoke("Join", gameName, userName);
         }
 
-        public async Task JoinGameByNameAndCreateIfNeeded(string name)
+        public async Task JoinGameByNameAndCreateIfNeeded(string gameName, string userName)
         {
-            await hubProxy.Invoke("JoinAndMaybeCreate", name);
+            await hubProxy.Invoke("JoinAndMaybeCreate", gameName, userName);
         }
 
         public async Task LeaveGame()

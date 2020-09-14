@@ -60,6 +60,7 @@
     <Compile Include="SignalRClient.cs" />
     <Compile Include="STCTransferData\ChangingData.cs" />
     <Compile Include="STCTransferData\UnitSpawnData.cs" />
+    <Compile Include="Units\Builder.cs" />
     <Compile Include="Units\Building.cs" />
     <Compile Include="Units\Factory.cs" />
     <Compile Include="Units\Tank.cs" />
