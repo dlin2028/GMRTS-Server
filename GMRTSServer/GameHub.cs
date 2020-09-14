@@ -43,13 +43,13 @@ namespace GMRTSServer
             return base.OnDisconnected(stopCalled);
         }
 
-        public async Task Join(string gameName)
+        public async Task<bool> Join(string gameName, string userName)
         {
             if(!games.ContainsKey(gameName))
             {
-                return;
+                return false;
             }
-            JoinGame(usersFromIDs[Context.ConnectionId], games[gameName]);
+            return JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName);
         }
 
         public async Task Leave()
@@ -57,21 +57,26 @@ namespace GMRTSServer
             RemoveUserFromGame(usersFromIDs[Context.ConnectionId]);
         }
 
-        public async Task JoinAndMaybeCreate(string gameName)
+        public async Task<bool> JoinAndMaybeCreate(string gameName, string userName)
         {
             if(!games.ContainsKey(gameName))
             {
                 games.Add(gameName, new Game());
             }
 
-            JoinGame(usersFromIDs[Context.ConnectionId], games[gameName]);
+            if(!JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName))
+            {
+                games.Remove(gameName);
+                return false;
+            }
+            return true;
         }
 
-        private void JoinGame(User user, Game game)
+        private bool JoinGame(User user, Game game, string userName)
         {
+            user.CurrentUsername = userName;
             RemoveUserFromGame(user);
-            game.Users.Add(user);
-            user.CurrentGame = game;
+            return !game.AddUser(user);
         }
 
         private void RemoveUserFromGame(User user)
@@ -83,8 +88,8 @@ namespace GMRTSServer
                 return;
             }
 
-            user.CurrentGame.Users.Remove(user);
-            if (game.Users.Count <= 0)
+            user.CurrentGame.RemoveUser(user);
+            if (game.UserCount <= 0)
             {
                 string name = null;
                 foreach (string n in games.Keys)

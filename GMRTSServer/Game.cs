@@ -18,7 +18,30 @@ namespace GMRTSServer
 {
     internal class Game
     {
-        public List<User> Users { get; set; } = new List<User>();
+        private List<User> Users { get; set; } = new List<User>();
+
+        public bool AddUser(User user)
+        {
+            if(Users.Any(a => a.CurrentUsername == user.CurrentUsername))
+            {
+                return false;
+            }
+
+            Users.Add(user);
+
+            Unit unit = new Builder(Guid.NewGuid());
+            user.Units.Add(unit);
+            Units.Add(unit.ID, unit);
+            user.CurrentGame = this;
+            return true;
+        }
+
+        public void RemoveUser(User user)
+        {
+            Users.Remove(user);
+        }
+
+        public int UserCount => Users.Count;
 
         public Stopwatch Stopwatch { get; set; } = new Stopwatch();
 
@@ -67,6 +90,16 @@ namespace GMRTSServer
                 throw new Exception("Already started!");
             }
             Stopwatch.Start();
+            foreach (User user in Users)
+            {
+                foreach (Unit unit in user.Units)
+                {
+                    foreach (User user2 in Users)
+                    {
+                        Context.Clients.Client(user2.ID).AddUnit(new UnitSpawnData() { ID = unit.ID, OwnerUsername = user.CurrentUsername, Type = unit.GetType().Name });
+                    }
+                }
+            }
             UpdateLoop().Start();
         }
 

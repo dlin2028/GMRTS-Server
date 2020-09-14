@@ -42,5 +42,10 @@ namespace GMRTSServer.ServersideUnits
         public bool UpdateRotation { get; set; } = false;
 
         public User Owner { get; set; }
+
+        public Unit(Guid id)
+        {
+            ID = id;
+        }
     }
 }

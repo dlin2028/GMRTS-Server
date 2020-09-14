@@ -12,6 +12,7 @@ namespace GMRTSServer
     {
         public string ID { get; set; }
 
+        public string CurrentUsername { get; set; }
         public Game CurrentGame { get; set; }
         public List<Unit> Units { get; set; } = new List<Unit>();
 

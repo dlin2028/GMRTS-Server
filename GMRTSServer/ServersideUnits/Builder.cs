@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServer.ServersideUnits
 {
-    internal class Tank : Unit
+    internal class Builder : Unit
     {
-        public Tank(Guid id) : base(id)
+        public Builder(Guid id) : base(id)
         {
 
         }

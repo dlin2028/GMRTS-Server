@@ -29,11 +29,12 @@ namespace GMRTSConsoleClient
             Console.ReadLine();
             client.OnPositionUpdate += Client_OnPositionUpdate;
             client.SpawnUnit += Client_SpawnUnit;
-            await client.JoinGameByNameAndCreateIfNeeded("TestGame");
+            await client.JoinGameByNameAndCreateIfNeeded("TestGame", "lalala");
             Console.WriteLine("Connected to game!");
             Console.ReadLine();
+
+            Console.ReadLine();
             await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(100, 200) }, UnitIDs = new List<Guid> { Guid.NewGuid() } });
-            await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(200, 100) }, UnitIDs = new List<Guid> { Guid.NewGuid() } });
             Console.ReadLine();
         }
 
@@ -53,17 +54,12 @@ namespace GMRTSConsoleClient
             }
             units.Add(obj.ID, unit);
 
-            Console.WriteLine($"{obj.Type} added with ID {obj.ID}");
+            Console.WriteLine($"{obj.Type} added with ID {obj.ID} to player {obj.OwnerUsername}");
         }
 
         private static void Client_OnPositionUpdate(GMRTSClasses.Units.Unit arg1, GMRTSClasses.STCTransferData.ChangingData<Vector2> arg2)
         {
             Console.WriteLine($"{arg1.GetType().Name} {arg1.ID} is at {arg2.Value} traveling {arg2.Delta} per second");
-        }
-
-        private static void Program_a()
-        {
-            Console.WriteLine("hi");
         }
     }
 }
