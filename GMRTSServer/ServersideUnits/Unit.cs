@@ -25,6 +25,8 @@ namespace GMRTSServer.ServersideUnits
 
         public Game Game { get; set; }
 
+        public string[] LastFrameVisibleUsers { get; set; } = new string[0];
+
         public virtual void Update(ulong currentMilliseconds, float elapsedTime)
         {
             State = State.Update(currentMilliseconds, elapsedTime);
@@ -38,5 +40,7 @@ namespace GMRTSServer.ServersideUnits
 
         public ChangingData<float> RotationUpdate { get; set; }
         public bool UpdateRotation { get; set; } = false;
+
+        public User Owner { get; set; }
     }
 }
