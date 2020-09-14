@@ -40,16 +40,22 @@ namespace GMRTSClasses
             hubProxy.On<Guid, ChangingData<float>>("UpdateRotation", RotationUpdate);
             hubProxy.On<Guid>("KillUnit", KillUnit);
             hubProxy.On<UnitSpawnData>("AddUnit", AddUnit);
+            hubProxy.On<DateTime>("GameStarted", GameStart);
         }
 
-        public async Task JoinGameByName(string gameName, string userName)
+        public async Task<bool> JoinGameByName(string gameName, string userName)
         {
-            await hubProxy.Invoke("Join", gameName, userName);
+            return await hubProxy.Invoke<bool>("Join", gameName, userName);
         }
 
-        public async Task JoinGameByNameAndCreateIfNeeded(string gameName, string userName)
+        public async Task<bool> JoinGameByNameAndCreateIfNeeded(string gameName, string userName)
         {
-            await hubProxy.Invoke("JoinAndMaybeCreate", gameName, userName);
+            return await hubProxy.Invoke<bool>("JoinAndMaybeCreate", gameName, userName);
+        }
+
+        public async Task RequestGameStart()
+        {
+            await hubProxy.Invoke("ReqStartGame");
         }
 
         public async Task LeaveGame()
@@ -109,6 +115,7 @@ namespace GMRTSClasses
         public event Action<Unit, ChangingData<float>> OnRotationUpdate;
         public event Action<Unit> TriggerUnitDeath;
         public event Action<UnitSpawnData> SpawnUnit;
+        public event Action<DateTime> OnGameStart;
 
         private async void Beat()
         {
@@ -146,6 +153,11 @@ namespace GMRTSClasses
         private void AddUnit(UnitSpawnData spawnInfo)
         {
             SpawnUnit?.Invoke(spawnInfo);
+        }
+
+        private void GameStart(DateTime time)
+        {
+            OnGameStart?.Invoke(time);
         }
     }
 }
