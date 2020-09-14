@@ -38,8 +38,18 @@ namespace GMRTSServer
 
         public void MoveIfCan(MoveAction action, User user)
         {
-            foreach(Unit unit in action.UnitIDs.Select(a => Units[a]).Intersect(user.Units))
+            foreach(Guid unitID in action.UnitIDs)
             {
+                if(!Units.ContainsKey(unitID))
+                {
+                    continue;
+                }
+                Unit unit = Units[unitID];
+                if(unit.Owner != user)
+                {
+                    continue;
+                }
+
                 unit.State = new MoveState() { Targets = new Queue<Vector2>(action.Positions), Unit = unit };
             }
         }
