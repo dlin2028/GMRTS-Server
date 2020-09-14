@@ -37,6 +37,17 @@ namespace GMRTSServer
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
+        public async Task ReqStartGame()
+        {
+            User user = usersFromIDs[Context.ConnectionId];
+            if(user.CurrentGame == null)
+            {
+                return;
+            }
+
+            user.CurrentGame.StartAt(DateTime.UtcNow + TimeSpan.FromSeconds(2));//.Start();
+        }
+
         public override Task OnDisconnected(bool stopCalled)
         {
             RemoveUser(Context.ConnectionId);
@@ -61,7 +72,7 @@ namespace GMRTSServer
         {
             if(!games.ContainsKey(gameName))
             {
-                games.Add(gameName, new Game());
+                games.Add(gameName, new Game(GlobalHost.ConnectionManager.GetHubContext<GameHub>()));
             }
 
             if(!JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName))
@@ -76,7 +87,7 @@ namespace GMRTSServer
         {
             user.CurrentUsername = userName;
             RemoveUserFromGame(user);
-            return !game.AddUser(user);
+            return game.AddUser(user);
         }
 
         private void RemoveUserFromGame(User user)

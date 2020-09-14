@@ -13,29 +13,49 @@ namespace GMRTSConsoleClient
 {
     class Program
     {
-        static double identity(int n)
-        {
-            return n;
-        }
 
         static Dictionary<Guid, Unit> units = new Dictionary<Guid, Unit>();
+        static object locker = new object();
+        static bool gameStarted = false;
 
         static async Task Main(string[] args)
         {
 
-            SignalRClient client = new SignalRClient("http://localhost:61337/", "GameHub", a => null, TimeSpan.FromMilliseconds(400));
+            SignalRClient client = new SignalRClient("http://localhost:61337/", "GameHub", a => units[a], TimeSpan.FromMilliseconds(400));
             bool success = await client.TryStart();
             Console.WriteLine(success ? "Success!" : "Failure");
             Console.ReadLine();
             client.OnPositionUpdate += Client_OnPositionUpdate;
             client.SpawnUnit += Client_SpawnUnit;
-            await client.JoinGameByNameAndCreateIfNeeded("TestGame", "lalala");
-            Console.WriteLine("Connected to game!");
+            client.OnGameStart += Client_OnGameStart;
+            Console.WriteLine(await client.JoinGameByNameAndCreateIfNeeded("TestGame", "lalala") ? "Join success" : "Join failure");
             Console.ReadLine();
+            await client.RequestGameStart();
+            await Task.Run(async () =>
+            {
+                bool keepGoing = true;
+                while(keepGoing)
+                {
+                    lock(locker)
+                    {
+                        keepGoing = !gameStarted;
+                    }
+                    await Task.Delay(1000);
+                }
+            });
+            Console.ReadLine();
+            await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(100, 200), new Vector2(100, 250), new Vector2(0, 0) }, UnitIDs = new List<Guid> { units.Keys.First() } });
+            Console.WriteLine("Move requested");
+            Console.ReadLine();
+        }
 
-            Console.ReadLine();
-            await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(100, 200) }, UnitIDs = new List<Guid> { Guid.NewGuid() } });
-            Console.ReadLine();
+        private static void Client_OnGameStart(DateTime obj)
+        {
+            Console.WriteLine($"Game started at {obj.ToLocalTime()}");
+            lock(locker)
+            {
+                gameStarted = true;
+            }
         }
 
         private static void Client_SpawnUnit(GMRTSClasses.STCTransferData.UnitSpawnData obj)

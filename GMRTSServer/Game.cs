@@ -5,6 +5,7 @@ using GMRTSServer.ServersideUnits;
 using GMRTSServer.UnitStates;
 
 using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 
 using System;
 using System.Collections.Generic;
@@ -20,16 +21,18 @@ namespace GMRTSServer
     {
         private List<User> Users { get; set; } = new List<User>();
 
+        object locker = new object();
+
         public bool AddUser(User user)
         {
-            if(Users.Any(a => a.CurrentUsername == user.CurrentUsername))
+            if (Users.Any(a => a.CurrentUsername == user.CurrentUsername))
             {
                 return false;
             }
 
             Users.Add(user);
 
-            Unit unit = new Builder(Guid.NewGuid());
+            Unit unit = new Builder(Guid.NewGuid()) { Owner = user };
             user.Units.Add(unit);
             Units.Add(unit.ID, unit);
             user.CurrentGame = this;
@@ -39,6 +42,11 @@ namespace GMRTSServer
         public void RemoveUser(User user)
         {
             Users.Remove(user);
+        }
+
+        public Game(IHubContext context)
+        {
+            Context = context;
         }
 
         public int UserCount => Users.Count;
@@ -61,35 +69,44 @@ namespace GMRTSServer
 
         public void MoveIfCan(MoveAction action, User user)
         {
-            foreach(Guid unitID in action.UnitIDs)
+            lock (locker)
             {
-                if(!Units.ContainsKey(unitID))
+                foreach (Guid unitID in action.UnitIDs)
                 {
-                    continue;
-                }
-                Unit unit = Units[unitID];
-                if(unit.Owner != user)
-                {
-                    continue;
-                }
+                    if (!Units.ContainsKey(unitID))
+                    {
+                        continue;
+                    }
+                    Unit unit = Units[unitID];
+                    if (unit.Owner != user)
+                    {
+                        continue;
+                    }
 
-                unit.State = new MoveState() { Targets = new Queue<Vector2>(action.Positions), Unit = unit };
+                    unit.State = new MoveState(20f) { Targets = new Queue<Vector2>(action.Positions), Unit = unit };
+                }
             }
         }
 
         public async Task StartAt(DateTime utcStart)
         {
             TimeSpan wait = utcStart - DateTime.UtcNow;
-            await Task.Delay(wait).ContinueWith(async a => await Start());
+            await Task.Delay((int)wait.TotalMilliseconds);
+            await Start();
         }
 
         public async Task Start()
         {
-            if(Stopwatch.IsRunning)
+            if (Stopwatch.IsRunning)
             {
                 throw new Exception("Already started!");
             }
+            DateTime now = DateTime.UtcNow;
             Stopwatch.Start();
+            foreach (User user in Users)
+            {
+                Context.Clients.Client(user.ID).GameStarted(now);
+            }
             foreach (User user in Users)
             {
                 foreach (Unit unit in user.Units)
@@ -100,19 +117,19 @@ namespace GMRTSServer
                     }
                 }
             }
-            UpdateLoop().Start();
+            UpdateLoop();//.Start();
         }
 
         private async Task UpdateLoop()
         {
-            while(true)
+            while (true)
             {
                 long newMillis = Stopwatch.ElapsedMilliseconds;
                 float deltaS = (newMillis - currentMillis) / 1000f;
                 currentMillis = newMillis;
-                await UpdateBody((ulong)currentMillis, deltaS);
+                    await UpdateBody((ulong)currentMillis, deltaS);
                 int passed = (int)(Stopwatch.ElapsedMilliseconds - currentMillis);
-                if(passed < 16)
+                if (passed < 16)
                 {
                     await Task.Delay(16 - passed);
                 }
@@ -121,9 +138,12 @@ namespace GMRTSServer
 
         private async Task UpdateBody(ulong currentMillis, float elapsedTime)
         {
-            foreach(Unit unit in Units.Values)
+            lock (locker)
             {
-                unit.Update(currentMillis, elapsedTime);
+                foreach (Unit unit in Units.Values)
+                {
+                    unit.Update(currentMillis, elapsedTime);
+                }
             }
 
             List<Guid> toKill = new List<Guid>();
@@ -136,8 +156,9 @@ namespace GMRTSServer
                 var clients = Context.Clients.Clients(userIDsToUpdate);
                 var newlyCanSeeClients = Context.Clients.Clients(newlyCanSee);
                 var newlyCantSeeClients = Context.Clients.Clients(newlyCantSee);
+                unit.LastFrameVisibleUsers = userIDsToUpdate.ToArray();
 
-                if(unit.UpdateHealth)
+                if (unit.UpdateHealth)
                 {
                     unit.UpdateHealth = false;
                     clients.UpdateHealth(unit.ID, unit.HealthUpdate);
@@ -147,7 +168,7 @@ namespace GMRTSServer
                     newlyCanSeeClients.UpdateHealth(unit.ID, unit.HealthUpdate);
                 }
 
-                if(unit.Health <= 0)
+                if (unit.Health <= 0)
                 {
                     clients.KillUnit(unit.ID);
                     toKill.Add(unit.ID);
@@ -176,7 +197,7 @@ namespace GMRTSServer
                 newlyCantSeeClients.UpdatePosition(unit.ID, new ChangingData<Vector2>(0, new Vector2(-200, -200), new Vector2(0, 0)));
             }
 
-            foreach(Guid id in toKill)
+            foreach (Guid id in toKill)
             {
                 Remove(Units[id]);
             }
@@ -188,14 +209,14 @@ namespace GMRTSServer
             List<string> users = new List<string>(Users.Count);
             users.Add(unit.Owner.ID);
 
-            foreach(User user in Users)
+            foreach (User user in Users)
             {
-                if(user == unit.Owner)
+                if (user == unit.Owner)
                 {
                     continue;
                 }
 
-                foreach(Unit myUnit in user.Units)
+                foreach (Unit myUnit in user.Units)
                 {
                     if ((myUnit.Position - unit.Position).LengthSquared() <= UnitSightRangeSquared)
                     {

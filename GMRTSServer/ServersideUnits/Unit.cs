@@ -46,6 +46,7 @@ namespace GMRTSServer.ServersideUnits
         public Unit(Guid id)
         {
             ID = id;
+            State = new IdleState();
         }
     }
 }

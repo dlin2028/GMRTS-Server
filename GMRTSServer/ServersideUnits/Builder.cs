@@ -10,7 +10,7 @@ namespace GMRTSServer.ServersideUnits
     {
         public Builder(Guid id) : base(id)
         {
-
+            Health = 100;
         }
     }
 }
