@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSClasses.CTSTransferData
+namespace GMRTSClasses.CTSTransferData.UnitUnit
 {
-    public class AttackAction : ClientAction
+    public class AssistAction : UnitUnitAction
     {
-        public List<Guid> TargetUnits { get; set; }
     }
 }

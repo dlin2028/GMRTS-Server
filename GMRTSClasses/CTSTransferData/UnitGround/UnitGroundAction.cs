@@ -5,9 +5,9 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSClasses.CTSTransferData
+namespace GMRTSClasses.CTSTransferData.UnitGround
 {
-    public class BuildFactoryAction : ClientAction
+    public abstract class UnitGroundAction : ClientAction
     {
         public Vector2 Position { get; set; }
     }

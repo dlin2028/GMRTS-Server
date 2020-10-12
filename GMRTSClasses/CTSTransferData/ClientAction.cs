@@ -8,6 +8,7 @@ namespace GMRTSClasses.CTSTransferData
 {
     public abstract class ClientAction
     {
+        public Guid ActionID { get; set; }
         public List<Guid> UnitIDs { get; set; }
     }
 }

@@ -1,4 +1,7 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.MetaActions;
+using GMRTSClasses.CTSTransferData.UnitGround;
+using GMRTSClasses.CTSTransferData.UnitUnit;
 using GMRTSClasses.STCTransferData;
 using GMRTSClasses.Units;
 
@@ -73,9 +76,9 @@ namespace GMRTSClasses
             await hubProxy.Invoke("Attack", action);
         }
 
-        public async Task BuildFactoryAction(BuildFactoryAction action)
+        public async Task BuildFactoryAction(BuildBuildingAction action)
         {
-            await hubProxy.Invoke("BuildFactory", action);
+            await hubProxy.Invoke("BuildBuilding", action);
         }
 
         public async Task MoveAction(MoveAction action)
@@ -83,9 +86,19 @@ namespace GMRTSClasses
             await hubProxy.Invoke("Move", action);
         }
 
-        public async Task PatrolAction(PatrolAction action)
+        public async Task DeleteAction(DeleteAction action)
         {
-            await hubProxy.Invoke("Patrol", action);
+            await hubProxy.Invoke("Delete", action);
+        }
+
+        public async Task ReplaceAction(ReplaceAction action)
+        {
+            await hubProxy.Invoke("Replace", action);
+        }
+        
+        public async Task ArbitraryNonmeta(ClientAction action)
+        {
+            await hubProxy.Invoke("Arbitrary", action);
         }
 
         public async Task<bool> TryStart()

@@ -50,12 +50,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Changing.cs" />
-    <Compile Include="CTSTransferData\AssistAction.cs" />
-    <Compile Include="CTSTransferData\AttackAction.cs" />
-    <Compile Include="CTSTransferData\BuildFactoryAction.cs" />
+    <Compile Include="CTSTransferData\BuildingType.cs" />
     <Compile Include="CTSTransferData\ClientAction.cs" />
-    <Compile Include="CTSTransferData\MoveAction.cs" />
-    <Compile Include="CTSTransferData\PatrolAction.cs" />
+    <Compile Include="CTSTransferData\MetaActions\DeleteAction.cs" />
+    <Compile Include="CTSTransferData\MetaActions\MetaAction.cs" />
+    <Compile Include="CTSTransferData\MetaActions\ReplaceAction.cs" />
+    <Compile Include="CTSTransferData\UnitGround\BuildBuildingAction.cs" />
+    <Compile Include="CTSTransferData\UnitGround\MoveAction.cs" />
+    <Compile Include="CTSTransferData\UnitGround\UnitGroundAction.cs" />
+    <Compile Include="CTSTransferData\UnitUnit\AssistAction.cs" />
+    <Compile Include="CTSTransferData\UnitUnit\AttackAction.cs" />
+    <Compile Include="CTSTransferData\UnitUnit\UnitUnitAction.cs" />
     <Compile Include="IChanger.cs" />
     <Compile Include="SignalRClient.cs" />
     <Compile Include="STCTransferData\ChangingData.cs" />
