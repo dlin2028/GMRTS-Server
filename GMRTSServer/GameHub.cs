@@ -142,7 +142,7 @@ namespace GMRTSServer
                 return;
             }
 
-            user.CurrentGame.RemoveUser(user);
+            game.RemoveUser(user);
             if (game.UserCount <= 0)
             {
                 string name = null;
