@@ -82,9 +82,10 @@
     <Compile Include="ServersideUnits\Builder.cs" />
     <Compile Include="ServersideUnits\Tank.cs" />
     <Compile Include="ServersideUnits\Unit.cs" />
-    <Compile Include="UnitStates\IdleState.cs" />
-    <Compile Include="UnitStates\IUnitState.cs" />
-    <Compile Include="UnitStates\MoveState.cs" />
+    <Compile Include="UnitStates\ContOrStop.cs" />
+    <Compile Include="UnitStates\IdleOrder.cs" />
+    <Compile Include="UnitStates\IUnitOrder.cs" />
+    <Compile Include="UnitStates\MoveOrder.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>

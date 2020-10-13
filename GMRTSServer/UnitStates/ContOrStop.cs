@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServer.UnitStates
 {
-    internal interface IUnitState
+    public enum ContOrStop
     {
-        IUnitState Update(ulong currentMilliseconds, float elapsedTime);
+        Continue,
+        Stop
     }
 }

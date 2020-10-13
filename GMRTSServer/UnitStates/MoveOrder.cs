@@ -1,4 +1,6 @@
-﻿using GMRTSServer.ServersideUnits;
+﻿using GMRTSClasses.CTSTransferData.UnitGround;
+
+using GMRTSServer.ServersideUnits;
 
 using System;
 using System.Collections.Generic;
@@ -9,39 +11,51 @@ using System.Threading.Tasks;
 
 namespace GMRTSServer.UnitStates
 {
-    internal class MoveState : IUnitState
+    internal class MoveOrder : IUnitOrder
     {
-        public Queue<Vector2> Targets { get; set; }
+        public List<Unit> OriginalUnits { get; set; }
 
         public Unit Unit { get; set; }
+
+        public Vector2 Target { get; set; }
 
         private Vector2 lastVel = new Vector2(0, 0);
 
         public float Velocity { get; }
 
         public float VelocitySquared { get; }
+        public Guid ID { get; set; }
 
-        public MoveState(float velocity)
+        public MoveOrder(float velocity)
         {
             Velocity = velocity;
             VelocitySquared = velocity * velocity;
         }
 
-        public IUnitState Update(ulong currentMilliseconds, float elapsedTime)
+        public MoveOrder(float velocity, MoveAction act, List<Unit> originalUnits, Unit unit)
         {
-            if(Targets.Count == 0)
+            Velocity = velocity;
+            VelocitySquared = velocity * velocity;
+
+            OriginalUnits = originalUnits;
+            Target = act.Position;
+
+            Unit = unit;
+            ID = act.ActionID;
+        }
+
+        public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)
+        {
+
+            Vector2 diffVec = Target - Unit.Position;
+            if(diffVec.LengthSquared() <= VelocitySquared)
             {
+                Unit.Position = Target;
+
                 //Updates the relevant clients that |v|=0
                 Unit.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Unit.Position, Vector2.Zero);
                 Unit.UpdatePosition = true;
-                return new IdleState();
-            }
-            Vector2 currTarg = Targets.Peek();
-            Vector2 diffVec = currTarg - Unit.Position;
-            if(diffVec.LengthSquared() <= VelocitySquared)
-            {
-                Unit.Position = Targets.Dequeue();
-                return this;
+                return ContOrStop.Stop;
             }
 
             Vector2 normalized = diffVec / diffVec.Length();
@@ -54,7 +68,7 @@ namespace GMRTSServer.UnitStates
                 Unit.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Unit.Position, velVec);
                 Unit.UpdatePosition = true;
             }
-            return this;
+            return ContOrStop.Continue;
         }
     }
 }

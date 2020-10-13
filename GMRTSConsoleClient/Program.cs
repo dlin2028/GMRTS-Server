@@ -1,4 +1,5 @@
 ﻿using GMRTSClasses;
+using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.Units;
 
 using System;
@@ -44,8 +45,10 @@ namespace GMRTSConsoleClient
                 }
             });
             Console.ReadLine();
-            await client.MoveAction(new GMRTSClasses.CTSTransferData.MoveAction() { Positions = new List<Vector2>() { new Vector2(100, 200), new Vector2(100, 250), new Vector2(0, 0) }, UnitIDs = new List<Guid> { units.Keys.First() } });
-            Console.WriteLine("Move requested");
+            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() } });
+            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 250), UnitIDs = new List<Guid> { units.Keys.First() } });
+            await client.MoveAction(new MoveAction() { Position = new Vector2(0, 0), UnitIDs = new List<Guid> { units.Keys.First() } });
+            Console.WriteLine("Moves requested");
             Console.ReadLine();
         }
 

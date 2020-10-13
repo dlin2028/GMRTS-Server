@@ -21,7 +21,7 @@ namespace GMRTSServer.ServersideUnits
 
         public float Rotation { get; set; }
 
-        public IUnitState State { get; set; }
+        public LinkedList<IUnitOrder> Orders { get; set; }
 
         public Game Game { get; set; }
 
@@ -29,7 +29,19 @@ namespace GMRTSServer.ServersideUnits
 
         public virtual void Update(ulong currentMilliseconds, float elapsedTime)
         {
-            State = State.Update(currentMilliseconds, elapsedTime);
+            if (Orders.Count == 0)
+            {
+                return;
+            }
+
+            ContOrStop keepGoing = Orders.First.Value.Update(currentMilliseconds, elapsedTime);
+            
+            if (keepGoing == ContOrStop.Continue)
+            {
+                return;
+            }
+
+            Orders.RemoveFirst();
         }
 
         public ChangingData<Vector2> PositionUpdate { get; set; }
@@ -46,7 +58,7 @@ namespace GMRTSServer.ServersideUnits
         public Unit(Guid id)
         {
             ID = id;
-            State = new IdleState();
+            Orders = new LinkedList<IUnitOrder>();
         }
     }
 }

@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace GMRTSServer.UnitStates
 {
-    internal class IdleState : IUnitState
+    internal interface IUnitOrder
     {
-        public IUnitState Update(ulong currentMilliseconds, float elapsedTime)
-        {
-            return this;
-        }
+        ContOrStop Update(ulong currentMilliseconds, float elapsedTime);
+
+        Guid ID { get; set; }
     }
 }

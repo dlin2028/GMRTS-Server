@@ -1,8 +1,12 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.MetaActions;
+using GMRTSClasses.CTSTransferData.UnitGround;
+using GMRTSClasses.CTSTransferData.UnitUnit;
 
 using Microsoft.AspNet.SignalR;
 
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,7 +28,46 @@ namespace GMRTSServer
 
         public async Task Assist(AssistAction act)
         {
-            
+            throw new NotImplementedException();
+        }
+
+        public async Task Attack(AttackAction act)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task BuildBuilding(BuildBuildingAction act)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task Arbitrary(ClientAction act)
+        {
+            if (act is MoveAction m)
+            {
+                await Move(m);
+            }
+            else if (act is BuildBuildingAction b)
+            {
+                await BuildBuilding(b);
+            }
+            else if (act is AttackAction at)
+            {
+                await Attack(at);
+            }
+            else if (act is AssistAction @as)
+            {
+                await Assist(@as);
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
+        public async Task Replace(ReplaceAction act)
+        {
+
         }
 
         public async Task Move(MoveAction act)
@@ -33,7 +76,7 @@ namespace GMRTSServer
             {
                 return;
             }
-            Console.WriteLine($"Moving {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Positions.First()}");
+            Console.WriteLine($"Enqueued action: Move {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Position}");
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 

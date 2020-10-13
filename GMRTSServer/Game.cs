@@ -1,4 +1,5 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.STCTransferData;
 
 using GMRTSServer.ServersideUnits;
@@ -71,6 +72,7 @@ namespace GMRTSServer
         {
             lock (locker)
             {
+                List<Unit> affectedUnits = new List<Unit>(action.UnitIDs.Count);
                 foreach (Guid unitID in action.UnitIDs)
                 {
                     if (!Units.ContainsKey(unitID))
@@ -83,7 +85,9 @@ namespace GMRTSServer
                         continue;
                     }
 
-                    unit.State = new MoveState(20f) { Targets = new Queue<Vector2>(action.Positions), Unit = unit };
+                    affectedUnits.Add(unit);
+
+                    unit.Orders.AddLast(new MoveOrder(20f) { ID = action.ActionID, OriginalUnits = affectedUnits, Target = action.Position, Unit = unit });
                 }
             }
         }
@@ -127,7 +131,7 @@ namespace GMRTSServer
                 long newMillis = Stopwatch.ElapsedMilliseconds;
                 float deltaS = (newMillis - currentMillis) / 1000f;
                 currentMillis = newMillis;
-                    await UpdateBody((ulong)currentMillis, deltaS);
+                await UpdateBody((ulong)currentMillis, deltaS);
                 int passed = (int)(Stopwatch.ElapsedMilliseconds - currentMillis);
                 if (passed < 16)
                 {
