@@ -48,7 +48,7 @@ namespace GMRTSServer.UnitStates
         {
 
             Vector2 diffVec = Target - Unit.Position;
-            if(diffVec.LengthSquared() <= VelocitySquared)
+            if(diffVec.LengthSquared() <= VelocitySquared * 0.001f)
             {
                 Unit.Position = Target;
 
