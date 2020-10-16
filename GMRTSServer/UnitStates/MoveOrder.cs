@@ -26,11 +26,13 @@ namespace GMRTSServer.UnitStates
         public float VelocitySquared { get; }
         public Guid ID { get; set; }
 
-        public MoveOrder(float velocity)
-        {
-            Velocity = velocity;
-            VelocitySquared = velocity * velocity;
-        }
+        public bool RequeueOnComplete { get; set; }
+
+        //public MoveOrder(float velocity)
+        //{
+        //    Velocity = velocity;
+        //    VelocitySquared = velocity * velocity;
+        //}
 
         public MoveOrder(float velocity, MoveAction act, List<Unit> originalUnits, Unit unit)
         {
@@ -42,6 +44,7 @@ namespace GMRTSServer.UnitStates
 
             Unit = unit;
             ID = act.ActionID;
+            RequeueOnComplete = act.RequeueOnCompletion;
         }
 
         public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)

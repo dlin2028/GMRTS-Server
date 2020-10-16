@@ -87,7 +87,7 @@ namespace GMRTSServer
 
                     affectedUnits.Add(unit);
 
-                    unit.Orders.AddLast(new MoveOrder(20f) { ID = action.ActionID, OriginalUnits = affectedUnits, Target = action.Position, Unit = unit });
+                    unit.Orders.AddLast(new MoveOrder(20f, action, affectedUnits, unit));
                 }
             }
         }

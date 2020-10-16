@@ -41,6 +41,11 @@ namespace GMRTSServer.ServersideUnits
                 return;
             }
 
+            if (keepGoing == ContOrStop.Requeue)
+            {
+                Orders.AddLast(Orders.First.Value);
+            }
+
             Orders.RemoveFirst();
         }
 

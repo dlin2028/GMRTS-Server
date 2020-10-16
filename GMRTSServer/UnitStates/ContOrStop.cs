@@ -9,6 +9,7 @@ namespace GMRTSServer.UnitStates
     public enum ContOrStop
     {
         Continue,
-        Stop
+        Stop,
+        Requeue
     }
 }
