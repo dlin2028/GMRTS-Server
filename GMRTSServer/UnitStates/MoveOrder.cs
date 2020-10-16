@@ -58,6 +58,7 @@ namespace GMRTSServer.UnitStates
                 //Updates the relevant clients that |v|=0
                 Unit.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Unit.Position, Vector2.Zero);
                 Unit.UpdatePosition = true;
+                lastVel = Vector2.Zero;
                 return RequeueOnComplete ? ContOrStop.Requeue : ContOrStop.Stop;
             }
 
