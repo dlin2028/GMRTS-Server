@@ -22,6 +22,12 @@ namespace GMRTSServer
     {
         private List<User> Users { get; set; } = new List<User>();
 
+        internal object FlowfieldLocker = new object();
+
+        internal Dictionary<(int x, int y), Task<byte[][]>> Flowfields = new Dictionary<(int x, int y), Task<byte[][]>>();
+
+        internal Map Map = new Map();
+
         object locker = new object();
 
         public bool AddUser(User user)
