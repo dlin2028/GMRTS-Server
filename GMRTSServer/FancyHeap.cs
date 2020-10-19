@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace GMRTSServer
 {
-    class Map
+    class FancyHeap
     {
-        public Dictionary<(int x, int y), ushort> Costs = new Dictionary<(int x, int y), ushort>();
-
-        public int TileSize = 50;
     }
 }
