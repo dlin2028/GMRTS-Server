@@ -8,8 +8,44 @@ namespace GMRTSServer
 {
     class Map
     {
-        public Dictionary<(int x, int y), ushort> Costs = new Dictionary<(int x, int y), ushort>();
+        private Dictionary<(int x, int y), ushort> Costs = new Dictionary<(int x, int y), ushort>();
 
-        public int TileSize = 50;
+        public int TileSize = 10;
+        public int TilesOnSide = 80;
+
+        public ushort this[int x, int y]
+        {
+            get => this[(x, y)];
+            set => this[(x, y)] = value;
+        }
+
+        public ushort this[(int x, int y) b]
+        {
+            get
+            {
+                if (Costs.ContainsKey(b))
+                {
+                    return Costs[b];
+                }
+
+                return 1;
+            }
+            set
+            {
+                if (value == 1)
+                {
+                    Costs.Remove(b);
+                    return;
+                }
+
+                if (Costs.ContainsKey(b))
+                {
+                    Costs[b] = value;
+                    return;
+                }
+
+                Costs.Add(b, value);
+            }
+        }
     }
 }
