@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace GMRTSServer
 {
+    //Based on https://github.com/GreatMindsRobotics/DataStructuresCurriculum/wiki/Heap-Tree but with a Dictionary to allow for more flexibility and O(1) contains
     class FancyHeap<TKey, TPriority> where TPriority : IComparable<TPriority>
     {
         List<TKey> things = new List<TKey>();
