@@ -118,9 +118,6 @@ namespace GMRTSServer
                     }
                 }
 
-
-
-                //VERY WIP, as you can see
             }
 
 
