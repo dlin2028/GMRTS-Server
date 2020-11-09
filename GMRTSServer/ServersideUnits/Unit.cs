@@ -23,6 +23,8 @@ namespace GMRTSServer.ServersideUnits
 
         public LinkedList<IUnitOrder> Orders { get; set; }
 
+        public abstract bool TryShoot(Unit target);
+
         public Game Game { get; set; }
 
         public string[] LastFrameVisibleUsers { get; set; } = new string[0];
