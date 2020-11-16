@@ -74,26 +74,82 @@ namespace GMRTSServer
             Units.Remove(unit.ID);
         }
 
+        public List<Unit> GetValidUnits(ClientAction act, User user)
+        {
+            List<Unit> units = new List<Unit>(act.UnitIDs.Count);
+            foreach(Guid unitID in act.UnitIDs)
+            {
+                if (!Units.ContainsKey(unitID))
+                {
+                    continue;
+                }
+
+                Unit unit = Units[unitID];
+                if (unit.Owner != user)
+                {
+                    continue;
+                }
+
+                units.Add(unit);
+            }
+
+            return units;
+        }
+
+        private static List<(LinkedListNode<IUnitOrder>, Unit)> GetOrderNodesToReplace(List<Unit> units, Guid actionToReplace)
+        {
+            List<(LinkedListNode<IUnitOrder>, Unit)> linkedListNodes = new List<(LinkedListNode<IUnitOrder>, Unit)>(units.Count);
+            foreach (Unit unit in units)
+            {
+                LinkedListNode<IUnitOrder> nodeToReplace = null;
+                var node = unit.Orders.First;
+                while (node != null)
+                {
+                    if (node.Value.ID == actionToReplace)
+                    {
+                        nodeToReplace = node;
+                        break;
+                    }
+                    node = node.Next;
+                }
+
+                if (nodeToReplace == null)
+                {
+                    continue;
+                }
+
+                linkedListNodes.Add((nodeToReplace, unit));
+            }
+            return linkedListNodes;
+        }
+
+        private static void ReplaceNode(LinkedListNode<IUnitOrder> node, IUnitOrder newOrder)
+        {
+            node.List.AddAfter(node, newOrder);
+            node.List.Remove(node);
+        }
+
         public void MoveIfCan(MoveAction action, User user)
         {
             lock (locker)
             {
-                List<Unit> affectedUnits = new List<Unit>(action.UnitIDs.Count);
-                foreach (Guid unitID in action.UnitIDs)
+                List<Unit> affectedUnits = GetValidUnits(action, user);
+                foreach (Unit unit in affectedUnits)
                 {
-                    if (!Units.ContainsKey(unitID))
-                    {
-                        continue;
-                    }
-                    Unit unit = Units[unitID];
-                    if (unit.Owner != user)
-                    {
-                        continue;
-                    }
-
-                    affectedUnits.Add(unit);
-
                     unit.Orders.AddLast(new MoveOrder(20f, action, affectedUnits, unit));
+                }
+            }
+        }
+
+        public void MoveIfCan(MoveAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                List<Unit> affectedUnits = GetValidUnits(action, user);
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new MoveOrder(20f, action, affectedUnits, node.Item2));
                 }
             }
         }

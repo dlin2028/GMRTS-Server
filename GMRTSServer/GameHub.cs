@@ -26,21 +26,6 @@ namespace GMRTSServer
             return base.OnConnected();
         }
 
-        public async Task Assist(AssistAction act)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task Attack(AttackAction act)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task BuildBuilding(BuildBuildingAction act)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task Arbitrary(ClientAction act)
         {
             if (act is MoveAction m)
@@ -78,6 +63,21 @@ namespace GMRTSServer
             }
             Console.WriteLine($"Enqueued action: Move {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Position}");
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
+        }
+
+        public async Task Assist(AssistAction act)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task Attack(AttackAction act)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task BuildBuilding(BuildBuildingAction act)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task ReqStartGame()
