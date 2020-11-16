@@ -28,16 +28,28 @@ namespace GMRTSServer
 
         public async Task Assist(AssistAction act)
         {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
             throw new NotImplementedException();
         }
 
         public async Task Attack(AttackAction act)
         {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
             throw new NotImplementedException();
         }
 
         public async Task BuildBuilding(BuildBuildingAction act)
         {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
             throw new NotImplementedException();
         }
 
@@ -67,12 +79,15 @@ namespace GMRTSServer
 
         public async Task Replace(ReplaceAction act)
         {
-
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
         }
 
         public async Task Move(MoveAction act)
         {
-            if(usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
                 return;
             }
