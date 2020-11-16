@@ -220,6 +220,57 @@ namespace GMRTSServer
             }
         }
 
+
+        public void AttackIfCan(AttackAction action, User user)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner == user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                foreach (Unit unit in affectedUnits)
+                {
+                    unit.Orders.AddLast(new AttackOrder(action.ActionID, movementCalculator) { Attacker = unit, Target = targ });
+                }
+            }
+        }
+
+        public void AttackIfCan(AssistAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner == user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new AttackOrder(action.ActionID, movementCalculator) { Attacker = node.Item2, Target = targ });
+                }
+            }
+        }
+
+
         public async Task StartAt(DateTime utcStart)
         {
             TimeSpan wait = utcStart - DateTime.UtcNow;
