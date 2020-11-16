@@ -12,5 +12,10 @@ namespace GMRTSServer.ServersideUnits
         {
 
         }
+
+        public override bool TryShoot(Unit target)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
