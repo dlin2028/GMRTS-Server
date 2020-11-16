@@ -1,5 +1,7 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.MetaActions;
 using GMRTSClasses.CTSTransferData.UnitGround;
+using GMRTSClasses.CTSTransferData.UnitUnit;
 using GMRTSClasses.STCTransferData;
 
 using GMRTSServer.ServersideUnits;
@@ -64,6 +66,8 @@ namespace GMRTSServer
 
         public const float UnitSightRangeSquared = 100 * 100;
 
+        private FlowfieldMovementCalculator movementCalculator = new FlowfieldMovementCalculator();
+
         //public Dictionary<User, List<Unit>> Units { get; set; } = new Dictionary<User, List<Unit>>();
         public Dictionary<Guid, Unit> Units { get; set; } = new Dictionary<Guid, Unit>();
         private long currentMillis = 0;
@@ -74,10 +78,10 @@ namespace GMRTSServer
             Units.Remove(unit.ID);
         }
 
-        public List<Unit> GetValidUnits(ClientAction act, User user)
+        public List<Unit> GetValidUnits(List<Guid> ids, User user)
         {
-            List<Unit> units = new List<Unit>(act.UnitIDs.Count);
-            foreach(Guid unitID in act.UnitIDs)
+            List<Unit> units = new List<Unit>(ids.Count);
+            foreach (Guid unitID in ids)
             {
                 if (!Units.ContainsKey(unitID))
                 {
@@ -129,11 +133,24 @@ namespace GMRTSServer
             node.List.Remove(node);
         }
 
+        public void DeleteIfCan(DeleteAction action, User user)
+        {
+            lock (locker)
+            {
+                var list = GetOrderNodesToReplace(GetValidUnits(action.AffectedUnits, user), action.TargetActionID);
+
+                foreach (var node in list)
+                {
+                    node.Item1.List.Remove(node.Item1);
+                }
+            }
+        }
+
         public void MoveIfCan(MoveAction action, User user)
         {
             lock (locker)
             {
-                List<Unit> affectedUnits = GetValidUnits(action, user);
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
                 foreach (Unit unit in affectedUnits)
                 {
                     unit.Orders.AddLast(new MoveOrder(20f, action, affectedUnits, unit));
@@ -145,11 +162,60 @@ namespace GMRTSServer
         {
             lock (locker)
             {
-                List<Unit> affectedUnits = GetValidUnits(action, user);
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
                 var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
                 foreach (var node in nodes)
                 {
                     ReplaceNode(node.Item1, new MoveOrder(20f, action, affectedUnits, node.Item2));
+                }
+            }
+        }
+
+        public void AssistIfCan(AssistAction action, User user)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner != user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                foreach (Unit unit in affectedUnits)
+                {
+                    unit.Orders.AddLast(new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
+                }
+            }
+        }
+
+        public void AssistIfCan(AssistAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner != user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new AssistOrder(action.ActionID, movementCalculator) { Assister = node.Item2, Target = targ });
                 }
             }
         }
