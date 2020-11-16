@@ -32,6 +32,7 @@ namespace GMRTSServer.UnitStates
             }
             else
             {
+                velocity = Vector2.Zero;
                 // TODO: Non-pathfinding computation
                 // This should be a method on the movement calculator for units that are not actively pathing (maybe idle?)
                 // Maybe something like this?
