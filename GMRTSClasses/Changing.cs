@@ -25,9 +25,10 @@ namespace GMRTSClasses
             StartTime = startMillis;
         }
 
-        public void Update(ulong currentMillis)
+        public Changing<T> Update(ulong currentMillis)
         {
             Value = Changer.Add(Start, Changer.Scale((currentMillis - StartTime) / 1000f, Change));
+            return this;
             //Value = Changer.Add(Value, Changer.Scale(elapsedSeconds, Change));
         }
     }

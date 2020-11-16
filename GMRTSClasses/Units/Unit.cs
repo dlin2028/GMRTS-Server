@@ -27,8 +27,9 @@ namespace GMRTSClasses.Units
 
         public virtual void Update(ulong currentMilliseconds)
         {
-            Health.Update(currentMilliseconds);
-            Position.Update(currentMilliseconds);
+            Health = Health.Update(currentMilliseconds);
+            Position = Position.Update(currentMilliseconds);
+            Rotation = Rotation.Update(currentMilliseconds);
         }
     }
 }

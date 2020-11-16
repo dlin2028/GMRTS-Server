@@ -30,8 +30,8 @@ namespace GMRTSClasses
 
         }
 
-        private Vector2Changer vecChanger = null;
-        public Vector2Changer VectorChanger => vecChanger ?? (vecChanger = new Vector2Changer());
+        private static Vector2Changer vecChanger = null;
+        public static Vector2Changer VectorChanger => vecChanger ?? (vecChanger = new Vector2Changer());
     }
 
     public class FloatChanger : IChanger<float>
@@ -51,7 +51,7 @@ namespace GMRTSClasses
 
         }
 
-        private FloatChanger fChanger = null;
-        public FloatChanger FChanger => fChanger ?? (fChanger = new FloatChanger());
+        private static FloatChanger fChanger = null;
+        public static FloatChanger FChanger => fChanger ?? (fChanger = new FloatChanger());
     }
 }
