@@ -11,6 +11,8 @@ namespace GMRTSClasses.Units
     {
         public Guid ID { get; }
 
+        public string OwnerUsername { get; set; }
+
         public Unit()
         {
             ID = Guid.NewGuid();
