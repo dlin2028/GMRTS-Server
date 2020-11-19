@@ -24,6 +24,8 @@ namespace GMRTSServerCore.SimClasses
 
         internal Dictionary<(int x, int y), Task<byte[][]>> Flowfields = new Dictionary<(int x, int y), Task<byte[][]>>();
 
+        internal IMovementCalculator movementCalculator;
+
         internal Map Map = new Map();
 
         object locker = new object();
@@ -90,8 +92,7 @@ namespace GMRTSServerCore.SimClasses
                     }
 
                     affectedUnits.Add(unit);
-
-                    unit.Orders.AddLast(new MoveOrder(20f, action, affectedUnits, unit));
+                    unit.Orders.AddLast(new MoveOrder(action, affectedUnits, unit));
                 }
             }
         }
