@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer.ServersideUnits
+namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
     internal class Tank : Unit
     {

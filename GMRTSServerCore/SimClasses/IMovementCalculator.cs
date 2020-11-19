@@ -1,4 +1,4 @@
-﻿using GMRTSServer.ServersideUnits;
+﻿using GMRTSServerCore.SimClasses.ServersideUnits;
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer
+namespace GMRTSServerCore.SimClasses
 {
     interface IMovementCalculator
     {

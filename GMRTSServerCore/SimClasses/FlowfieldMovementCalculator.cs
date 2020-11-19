@@ -1,4 +1,4 @@
-﻿using GMRTSServer.ServersideUnits;
+﻿using GMRTSServerCore.SimClasses.ServersideUnits;
 
 using System;
 using System.Collections.Concurrent;
@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer
+namespace GMRTSServerCore.SimClasses
 {
     class FlowfieldMovementCalculator : IMovementCalculator
     {

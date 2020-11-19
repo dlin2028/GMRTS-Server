@@ -1,6 +1,6 @@
 ﻿using GMRTSClasses.CTSTransferData.UnitGround;
 
-using GMRTSServer.ServersideUnits;
+using GMRTSServerCore.SimClasses.ServersideUnits;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer.UnitStates
+namespace GMRTSServerCore.SimClasses.UnitStates
 {
     internal class MoveOrder : IUnitOrder
     {

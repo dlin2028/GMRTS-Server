@@ -1,22 +1,20 @@
-﻿using GMRTSClasses.CTSTransferData;
-using GMRTSClasses.CTSTransferData.UnitGround;
+﻿using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.STCTransferData;
 
-using GMRTSServer.ServersideUnits;
-using GMRTSServer.UnitStates;
+using GMRTSServerCore.Hubs;
+using GMRTSServerCore.SimClasses.ServersideUnits;
+using GMRTSServerCore.SimClasses.UnitStates;
 
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer
+namespace GMRTSServerCore.SimClasses
 {
     internal class Game
     {
@@ -51,7 +49,7 @@ namespace GMRTSServer
             Users.Remove(user);
         }
 
-        public Game(IHubContext context)
+        public Game(IHubContext<GameHub> context)
         {
             Context = context;
         }
@@ -60,7 +58,7 @@ namespace GMRTSServer
 
         public Stopwatch Stopwatch { get; set; } = new Stopwatch();
 
-        public IHubContext Context { get; set; }
+        public IHubContext<GameHub> Context { get; set; }
 
         public const float UnitSightRangeSquared = 100 * 100;
 
@@ -115,7 +113,7 @@ namespace GMRTSServer
             Stopwatch.Start();
             foreach (User user in Users)
             {
-                Context.Clients.Client(user.ID).GameStarted(now);
+                await Context.Clients.Client(user.ID).SendAsync("GameStarted", now);
             }
             foreach (User user in Users)
             {
@@ -123,7 +121,7 @@ namespace GMRTSServer
                 {
                     foreach (User user2 in Users)
                     {
-                        Context.Clients.Client(user2.ID).AddUnit(new UnitSpawnData() { ID = unit.ID, OwnerUsername = user.CurrentUsername, Type = unit.GetType().Name });
+                        await Context.Clients.Client(user2.ID).SendAsync("AddUnit", new UnitSpawnData() { ID = unit.ID, OwnerUsername = user.CurrentUsername, Type = unit.GetType().Name });
                     }
                 }
             }
@@ -159,8 +157,8 @@ namespace GMRTSServer
             List<Guid> toKill = new List<Guid>();
             foreach (Unit unit in Units.Values)
             {
-                IList<string> userIDsToUpdate = GetRelevantUserIDs(unit);
-                IList<string> oldUserIDsToUpdate = unit.LastFrameVisibleUsers;
+                IReadOnlyList<string> userIDsToUpdate = GetRelevantUserIDs(unit);
+                IReadOnlyList<string> oldUserIDsToUpdate = unit.LastFrameVisibleUsers;
                 string[] newlyCanSee = userIDsToUpdate.Except(oldUserIDsToUpdate).ToArray();
                 string[] newlyCantSee = oldUserIDsToUpdate.Except(userIDsToUpdate).ToArray();
                 var clients = Context.Clients.Clients(userIDsToUpdate);
@@ -171,40 +169,40 @@ namespace GMRTSServer
                 if (unit.UpdateHealth)
                 {
                     unit.UpdateHealth = false;
-                    clients.UpdateHealth(unit.ID, unit.HealthUpdate);
+                    await clients.SendAsync("UpdateHealth", unit.ID, unit.HealthUpdate);
                 }
                 else
                 {
-                    newlyCanSeeClients.UpdateHealth(unit.ID, unit.HealthUpdate);
+                    await newlyCanSeeClients.SendAsync("UpdateHealth", unit.ID, unit.HealthUpdate);
                 }
 
                 if (unit.Health <= 0)
                 {
-                    clients.KillUnit(unit.ID);
+                    await clients.SendAsync("KillUnit", unit.ID);
                     toKill.Add(unit.ID);
                 }
 
                 if (unit.UpdatePosition)
                 {
                     unit.UpdatePosition = false;
-                    clients.UpdatePosition(unit.ID, unit.PositionUpdate);
+                    await clients.SendAsync("UpdatePosition", unit.ID, unit.PositionUpdate);
                 }
                 else
                 {
-                    newlyCanSeeClients.UpdatePosition(unit.ID, unit.PositionUpdate);
+                    await newlyCanSeeClients.SendAsync("UpdatePosition", unit.ID, unit.PositionUpdate);
                 }
 
                 if (unit.UpdateRotation)
                 {
                     unit.UpdateRotation = false;
-                    clients.UpdateRotation(unit.ID, unit.RotationUpdate);
+                    await clients.SendAsync("UpdateRotation", unit.ID, unit.RotationUpdate);
                 }
                 else
                 {
-                    newlyCanSeeClients.UpdateRotation(unit.ID, unit.RotationUpdate);
+                    await newlyCanSeeClients.SendAsync("UpdateRotation", unit.ID, unit.RotationUpdate);
                 }
 
-                newlyCantSeeClients.UpdatePosition(unit.ID, new ChangingData<Vector2>(0, new Vector2(-200, -200), new Vector2(0, 0)));
+                await newlyCantSeeClients.SendAsync("UpdatePosition", unit.ID, new ChangingData<Vector2>(0, new Vector2(-200, -200), new Vector2(0, 0)));
             }
 
             foreach (Guid id in toKill)
@@ -214,7 +212,7 @@ namespace GMRTSServer
         }
 
         //If this function turns out to be a performance bottleneck, let me (Peter) know. I have a plan involving breaking the map into grid squares.
-        private IList<string> GetRelevantUserIDs(Unit unit)
+        private IReadOnlyList<string> GetRelevantUserIDs(Unit unit)
         {
             List<string> users = new List<string>(Users.Count);
             users.Add(unit.Owner.ID);

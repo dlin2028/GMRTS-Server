@@ -1,6 +1,7 @@
 ﻿using GMRTSClasses.STCTransferData;
 
-using GMRTSServer.UnitStates;
+using GMRTSServerCore.SimClasses;
+using GMRTSServerCore.SimClasses.UnitStates;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer.ServersideUnits
+namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
     internal abstract class Unit
     {
