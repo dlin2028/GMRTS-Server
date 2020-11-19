@@ -63,10 +63,12 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         public User Owner { get; set; }
 
-        public Unit(Guid id)
+        public Unit(Guid id, User owner, Game game)
         {
             ID = id;
             Orders = new LinkedList<IUnitOrder>();
+            this.Owner = owner;
+            this.Game = game;
         }
     }
 }

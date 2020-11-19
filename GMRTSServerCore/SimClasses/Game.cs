@@ -39,7 +39,7 @@ namespace GMRTSServerCore.SimClasses
 
             Users.Add(user);
 
-            Unit unit = new Builder(Guid.NewGuid()) { Owner = user };
+            Unit unit = new Builder(Guid.NewGuid(), user, this);
             user.Units.Add(unit);
             Units.Add(unit.ID, unit);
             user.CurrentGame = this;
@@ -54,6 +54,7 @@ namespace GMRTSServerCore.SimClasses
         public Game(IHubContext<GameHub> context)
         {
             Context = context;
+            movementCalculator = new FlowfieldMovementCalculator();
         }
 
         public int UserCount => Users.Count;

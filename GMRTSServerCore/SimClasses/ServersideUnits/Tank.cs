@@ -8,7 +8,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
     internal class Tank : Unit
     {
-        public Tank(Guid id) : base(id)
+        public Tank(Guid id, User owner, Game game) : base(id, owner, game)
         {
 
         }

@@ -130,7 +130,7 @@ namespace GMRTSServerCore.SimClasses
 
             for (int x1 = 0; x1 < m.TilesOnSide; x1++)
             {
-                vectorIndices[x] = new byte[m.TilesOnSide];
+                vectorIndices[x1] = new byte[m.TilesOnSide];
                 for (int y1 = 0; y1 < m.TilesOnSide; y1++)
                 {
                     if (m[(x1, y1)] == ushort.MaxValue)
