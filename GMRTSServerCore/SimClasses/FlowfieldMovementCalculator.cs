@@ -46,7 +46,7 @@ namespace GMRTSServerCore.SimClasses
 
             //MANY MANY OTHER THINGS (boids)
 
-            return flowfieldVel;
+            return flowfieldVel * unit.VelocityMagnitude;
         }
 
         static async Task<byte[][]> ComputeFlowField(int x, int y, Map m)

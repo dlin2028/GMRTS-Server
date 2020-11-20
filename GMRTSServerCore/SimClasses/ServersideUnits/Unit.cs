@@ -24,6 +24,11 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         public LinkedList<IUnitOrder> Orders { get; set; }
 
+        /// <summary>
+        /// Temporary!
+        /// </summary>
+        public float VelocityMagnitude = 20f;
+
         public abstract bool TryShoot(Unit target);
 
         public Game Game { get; set; }
