@@ -12,5 +12,7 @@ namespace GMRTSServerCore.SimClasses
     interface IMovementCalculator
     {
         Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination);
+
+        internal static (int x, int y) fromVec2(Vector2 vec, int tileSize) => ((int)vec.X / tileSize, (int)vec.Y / tileSize);
     }
 }

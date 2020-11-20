@@ -19,14 +19,14 @@ namespace GMRTSServerCore.SimClasses
 
         static float RadTwo = 1.414213562373f;
 
-        private (int x, int y) fromVec2(Vector2 vec, int tileSize) => ((int)vec.X / tileSize, (int)vec.Y / tileSize);
+        
 
         public Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination)
         {
             Vector2 flowfieldVel;
             lock (game.FlowfieldLocker)
             {
-                (int x, int y) tile = fromVec2(destination, game.Map.TileSize);
+                (int x, int y) tile = IMovementCalculator.fromVec2(destination, game.Map.TileSize);
                 if (!game.Flowfields.ContainsKey(tile))
                 {
                     game.Flowfields[tile] = ComputeFlowField(tile.x, tile.y, game.Map);
@@ -39,7 +39,7 @@ namespace GMRTSServerCore.SimClasses
                 else
                 {
                     byte[][] res = game.Flowfields[tile].Result;
-                    (int x, int y) currTile = fromVec2(unit.Position, game.Map.TileSize);
+                    (int x, int y) currTile = IMovementCalculator.fromVec2(unit.Position, game.Map.TileSize);
                     flowfieldVel = flowfieldVels[res[currTile.x][currTile.y]];
                 }
             }

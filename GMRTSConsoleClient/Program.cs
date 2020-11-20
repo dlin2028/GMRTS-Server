@@ -22,7 +22,7 @@ namespace GMRTSConsoleClient
         static async Task Main(string[] args)
         {
 
-            SignalRClient client = new SignalRClient("http://localhost:53694/server", "GameHub", a => units[a], TimeSpan.FromMilliseconds(400));
+            SignalRClient client = new SignalRClient("http://localhost:53694/server", a => units[a], TimeSpan.FromMilliseconds(400));
             Console.ReadLine();
             bool success = await client.TryStart();
             Console.WriteLine(success ? "Success!" : "Failure");
