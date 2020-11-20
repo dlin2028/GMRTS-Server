@@ -6,6 +6,7 @@ using GMRTSClasses.STCTransferData;
 using GMRTSClasses.Units;
 
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace GMRTSClasses
 
         public SignalRClient(string url, string hubName, Func<Guid, Unit> getUnit, TimeSpan heartbeatTimeout)
         {
-            connection = new HubConnectionBuilder().WithUrl(url).Build();
+            connection = new HubConnectionBuilder().AddJsonProtocol((a) => { a.PayloadSerializerOptions.IncludeFields = true; }).WithUrl(url).Build();
             this.getUnit = getUnit;
             timeSinceHeartbeat = TimeSpan.Zero;
             this.heartbeatTimeout = heartbeatTimeout;
