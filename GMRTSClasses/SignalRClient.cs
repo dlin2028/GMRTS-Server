@@ -27,7 +27,7 @@ namespace GMRTSClasses
 
         public event Action OnHeartbeatDeath = null;
 
-        public SignalRClient(string url, string hubName, Func<Guid, Unit> getUnit, TimeSpan heartbeatTimeout)
+        public SignalRClient(string url, Func<Guid, Unit> getUnit, TimeSpan heartbeatTimeout)
         {
             connection = new HubConnectionBuilder().AddJsonProtocol((a) => { a.PayloadSerializerOptions.IncludeFields = true; }).WithUrl(url).Build();
             this.getUnit = getUnit;
