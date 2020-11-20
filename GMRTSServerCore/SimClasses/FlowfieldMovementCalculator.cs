@@ -100,11 +100,13 @@ namespace GMRTSServerCore.SimClasses
                             continue;
                         }
 
-                        float nextCost = m[scanX, scanY];
+                        float costDelta = m[scanX, scanY];
                         if (scanX != current.x || scanY != current.y)
                         {
-                            nextCost *= RadTwo;
+                            costDelta *= RadTwo;
                         }
+
+                        float nextCost = integCosts[current.x][current.y] + costDelta;
 
                         if (nextCost < integCosts[scanX][scanY])
                         {

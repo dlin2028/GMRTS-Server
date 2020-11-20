@@ -46,9 +46,10 @@ namespace GMRTSConsoleClient
                 }
             });
             Console.ReadLine();
-            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() } });
-            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 250), UnitIDs = new List<Guid> { units.Keys.First() } });
-            await client.MoveAction(new MoveAction() { Position = new Vector2(0, 0), UnitIDs = new List<Guid> { units.Keys.First() } });
+            MoveAction act = new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() };
+            await client.MoveAction(act);// new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() });
+            //await client.MoveAction(new MoveAction() { Position = new Vector2(100, 250), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() });
+            //await client.MoveAction(new MoveAction() { Position = new Vector2(0, 0), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() });
             Console.WriteLine("Moves requested");
             Console.ReadLine();
         }
