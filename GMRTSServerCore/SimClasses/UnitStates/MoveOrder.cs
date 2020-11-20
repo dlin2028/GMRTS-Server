@@ -51,7 +51,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             //if(diffVec.LengthSquared() <= vel.LengthSquared() * 0.001f)
             if (IMovementCalculator.fromVec2(Unit.Position, Unit.Game.Map.TileSize) == TargetSquare)
             {
-                Unit.Position = Target;
+                //Unit.Position = Target;
 
                 //Updates the relevant clients that |v|=0
                 Unit.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Unit.Position, Vector2.Zero);
