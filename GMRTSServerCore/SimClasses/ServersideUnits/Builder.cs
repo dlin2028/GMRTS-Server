@@ -16,7 +16,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         public override bool TryShoot(Unit target)
         {
-            throw new NotImplementedException();
+            return false;
         }
     }
 }

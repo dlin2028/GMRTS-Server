@@ -28,7 +28,9 @@ namespace GMRTSServerCore.SimClasses
 
         internal IMovementCalculator movementCalculator;
 
-        internal Map Map = new Map();
+        internal IUnitPositionLookup unitPositionLookup;
+
+        internal Map Map;
 
         object locker = new object();
 
@@ -55,8 +57,15 @@ namespace GMRTSServerCore.SimClasses
 
         public Game(IHubContext<GameHub> context)
         {
+            Map = new Map();
             Context = context;
             movementCalculator = new FlowfieldMovementCalculator();
+            unitPositionLookup = new GridUnitPositionLookup(this);
+        }
+
+        internal void UpdateUnitLookup(Unit unit, Vector2 newPos)
+        {
+            unitPositionLookup.Update(unit, newPos);
         }
 
         public int UserCount => Users.Count;

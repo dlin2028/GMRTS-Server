@@ -18,7 +18,17 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         public float Health { get; set; }
 
-        public Vector2 Position { get; set; }
+        private Vector2 pos;
+        public Vector2 Position
+        {
+            get => pos;
+
+            set
+            {
+                Game.UpdateUnitLookup(this, value);
+                pos = value;
+            }
+        }
 
         public float Rotation { get; set; }
 
