@@ -1,4 +1,4 @@
-﻿using GMRTSServer.ServersideUnits;
+﻿using GMRTSServerCore.SimClasses.ServersideUnits;
 
 using System;
 using System.Collections.Concurrent;
@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer
+namespace GMRTSServerCore.SimClasses
 {
     class FlowfieldMovementCalculator : IMovementCalculator
     {
@@ -19,14 +19,14 @@ namespace GMRTSServer
 
         static float RadTwo = 1.414213562373f;
 
-        private (int x, int y) fromVec2(Vector2 vec, int tileSize) => ((int)vec.X / tileSize, (int)vec.Y / tileSize);
+        
 
         public Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination)
         {
             Vector2 flowfieldVel;
             lock (game.FlowfieldLocker)
             {
-                (int x, int y) tile = fromVec2(destination, game.Map.TileSize);
+                (int x, int y) tile = IMovementCalculator.fromVec2(destination, game.Map.TileSize);
                 if (!game.Flowfields.ContainsKey(tile))
                 {
                     game.Flowfields[tile] = ComputeFlowField(tile.x, tile.y, game.Map);
@@ -39,14 +39,14 @@ namespace GMRTSServer
                 else
                 {
                     byte[][] res = game.Flowfields[tile].Result;
-                    (int x, int y) currTile = fromVec2(unit.Position, game.Map.TileSize);
+                    (int x, int y) currTile = IMovementCalculator.fromVec2(unit.Position, game.Map.TileSize);
                     flowfieldVel = flowfieldVels[res[currTile.x][currTile.y]];
                 }
             }
 
             //MANY MANY OTHER THINGS (boids)
 
-            return flowfieldVel;
+            return flowfieldVel * unit.VelocityMagnitude;
         }
 
         static async Task<byte[][]> ComputeFlowField(int x, int y, Map m)
@@ -100,11 +100,13 @@ namespace GMRTSServer
                             continue;
                         }
 
-                        float nextCost = m[scanX, scanY];
+                        float costDelta = m[scanX, scanY];
                         if (scanX != current.x || scanY != current.y)
                         {
-                            nextCost *= RadTwo;
+                            costDelta *= RadTwo;
                         }
+
+                        float nextCost = integCosts[current.x][current.y] + costDelta;
 
                         if (nextCost < integCosts[scanX][scanY])
                         {
@@ -130,7 +132,7 @@ namespace GMRTSServer
 
             for (int x1 = 0; x1 < m.TilesOnSide; x1++)
             {
-                vectorIndices[x] = new byte[m.TilesOnSide];
+                vectorIndices[x1] = new byte[m.TilesOnSide];
                 for (int y1 = 0; y1 < m.TilesOnSide; y1++)
                 {
                     if (m[(x1, y1)] == ushort.MaxValue)

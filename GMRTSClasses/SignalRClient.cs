@@ -5,7 +5,8 @@ using GMRTSClasses.CTSTransferData.UnitUnit;
 using GMRTSClasses.STCTransferData;
 using GMRTSClasses.Units;
 
-using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.Collections.Generic;
@@ -20,91 +21,89 @@ namespace GMRTSClasses
     public class SignalRClient
     {
         private HubConnection connection;
-        private IHubProxy hubProxy;
         private Func<Guid, Unit> getUnit;
         private TimeSpan timeSinceHeartbeat;
         private TimeSpan heartbeatTimeout;
 
         public event Action OnHeartbeatDeath = null;
 
-        public SignalRClient(string url, string hubName, Func<Guid, Unit> getUnit, TimeSpan heartbeatTimeout)
+        public SignalRClient(string url, Func<Guid, Unit> getUnit, TimeSpan heartbeatTimeout)
         {
-            connection = new HubConnection(url);
-            hubProxy = connection.CreateHubProxy(hubName);
+            connection = new HubConnectionBuilder().AddJsonProtocol((a) => { a.PayloadSerializerOptions.IncludeFields = true; }).WithUrl(url).Build();
             this.getUnit = getUnit;
             timeSinceHeartbeat = TimeSpan.Zero;
             this.heartbeatTimeout = heartbeatTimeout;
             OnHeartbeat += Beat;
 
             //These are IDisposable. I should probably make this class IDisposable, too, so it can dispose of them.
-            hubProxy.On("HeartbeatFromServer", OnHeartbeat);
-            hubProxy.On<Guid, ChangingData<Vector2>>("UpdatePosition", PosUpdate);
-            hubProxy.On<Guid, ChangingData<float>>("UpdateHealth", HealthUpdate);
-            hubProxy.On<Guid, ChangingData<float>>("UpdateRotation", RotationUpdate);
-            hubProxy.On<Guid>("KillUnit", KillUnit);
-            hubProxy.On<UnitSpawnData>("AddUnit", AddUnit);
-            hubProxy.On<DateTime>("GameStarted", GameStart);
+            connection.On("HeartbeatFromServer", OnHeartbeat);
+            connection.On<Guid, ChangingData<Vector2>>("UpdatePosition", PosUpdate);
+            connection.On<Guid, ChangingData<float>>("UpdateHealth", HealthUpdate);
+            connection.On<Guid, ChangingData<float>>("UpdateRotation", RotationUpdate);
+            connection.On<Guid>("KillUnit", KillUnit);
+            connection.On<UnitSpawnData>("AddUnit", AddUnit);
+            connection.On<DateTime>("GameStarted", GameStart);
         }
 
         public async Task<bool> JoinGameByName(string gameName, string userName)
         {
-            return await hubProxy.Invoke<bool>("Join", gameName, userName);
+            return await connection.InvokeAsync<bool>("Join", gameName, userName);
         }
 
         public async Task<bool> JoinGameByNameAndCreateIfNeeded(string gameName, string userName)
         {
-            return await hubProxy.Invoke<bool>("JoinAndMaybeCreate", gameName, userName);
+            return await connection.InvokeAsync<bool>("JoinAndMaybeCreate", gameName, userName);
         }
 
         public async Task RequestGameStart()
         {
-            await hubProxy.Invoke("ReqStartGame");
+            await connection.InvokeAsync("ReqStartGame");
         }
 
         public async Task LeaveGame()
         {
-            await hubProxy.Invoke("Leave");
+            await connection.InvokeAsync("Leave");
         }
 
         public async Task AssistAction(AssistAction action)
         {
-            await hubProxy.Invoke("Assist", action);
+            await connection.InvokeAsync("Assist", action);
         }
 
         public async Task AttackAction(AttackAction action)
         {
-            await hubProxy.Invoke("Attack", action);
+            await connection.InvokeAsync("Attack", action);
         }
 
         public async Task BuildFactoryAction(BuildBuildingAction action)
         {
-            await hubProxy.Invoke("BuildBuilding", action);
+            await connection.InvokeAsync("BuildBuilding", action);
         }
 
         public async Task MoveAction(MoveAction action)
         {
-            await hubProxy.Invoke("Move", action);
+            await connection.InvokeAsync("Move", action);
         }
 
         public async Task DeleteAction(DeleteAction action)
         {
-            await hubProxy.Invoke("Delete", action);
+            await connection.InvokeAsync("Delete", action);
         }
 
         public async Task ReplaceAction(ReplaceAction action)
         {
-            await hubProxy.Invoke("Replace", action);
+            await connection.InvokeAsync("Replace", action);
         }
         
         public async Task ArbitraryNonmeta(ClientAction action)
         {
-            await hubProxy.Invoke("Arbitrary", action);
+            await connection.InvokeAsync("Arbitrary", action);
         }
 
         public async Task<bool> TryStart()
         {
             bool faulted = false;
-            await connection.Start().ContinueWith(t => faulted = t.IsFaulted);
+            await connection.StartAsync().ContinueWith(t => faulted = t.IsFaulted);
             return !faulted;
         }
 
@@ -117,9 +116,9 @@ namespace GMRTSClasses
             }
         }
 
-        public void KillConnection()
+        public async Task KillConnection()
         {
-            connection.Stop();
+            await connection.StopAsync();
         }
 
         public event Action OnHeartbeat;
@@ -133,7 +132,7 @@ namespace GMRTSClasses
         private async void Beat()
         {
             timeSinceHeartbeat = TimeSpan.Zero;
-            await hubProxy.Invoke("HeartbeatFromClient");
+            await connection.InvokeAsync("HeartbeatFromClient");
         }
 
         private void PosUpdate(Guid id, ChangingData<Vector2> newPos)

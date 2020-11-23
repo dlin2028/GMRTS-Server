@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer.ServersideUnits
+namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
-    internal class Tank : Unit
+    internal class Builder : Unit
     {
-        public Tank(Guid id) : base(id)
+        public Builder(Guid id, User owner, Game game) : base(id, owner, game)
         {
-
+            Health = 100;
         }
+
 
         public override bool TryShoot(Unit target)
         {

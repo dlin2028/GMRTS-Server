@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer.UnitStates
+namespace GMRTSServerCore.SimClasses.UnitStates
 {
     internal interface IUnitOrder
     {

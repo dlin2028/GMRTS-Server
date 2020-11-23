@@ -3,27 +3,56 @@ using GMRTSClasses.CTSTransferData.MetaActions;
 using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.CTSTransferData.UnitUnit;
 
-using Microsoft.AspNet.SignalR;
+using GMRTSServerCore.SimClasses;
+
+using Microsoft.AspNetCore.SignalR;
 
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer
+namespace GMRTSServerCore.Hubs
 {
     public class GameHub : Hub
     {
         static Dictionary<string, User> usersFromIDs = new Dictionary<string, User>();
         static Dictionary<string, Game> games = new Dictionary<string, Game>();
 
-        public override Task OnConnected()
+        private IHubContext<GameHub> context;
+
+        public override async Task OnConnectedAsync()
         {
             Console.WriteLine("hi");
             usersFromIDs.Add(Context.ConnectionId, new User(Context.ConnectionId));
-            return base.OnConnected();
+            await base.OnConnectedAsync();
+        }
+
+        public async Task Assist(AssistAction act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
+            throw new NotImplementedException();
+        }
+
+        public async Task Attack(AttackAction act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
+            throw new NotImplementedException();
+        }
+
+        public async Task BuildBuilding(BuildBuildingAction act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
+            throw new NotImplementedException();
         }
 
         public async Task Arbitrary(ClientAction act)
@@ -52,12 +81,15 @@ namespace GMRTSServer
 
         public async Task Replace(ReplaceAction act)
         {
-
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
         }
 
         public async Task Move(MoveAction act)
         {
-            if(usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
                 return;
             }
@@ -65,25 +97,10 @@ namespace GMRTSServer
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
-        public async Task Assist(AssistAction act)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task Attack(AttackAction act)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task BuildBuilding(BuildBuildingAction act)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task ReqStartGame()
         {
             User user = usersFromIDs[Context.ConnectionId];
-            if(user.CurrentGame == null)
+            if (user.CurrentGame == null)
             {
                 return;
             }
@@ -91,15 +108,15 @@ namespace GMRTSServer
             user.CurrentGame.StartAt(DateTime.UtcNow + TimeSpan.FromSeconds(2));//.Start();
         }
 
-        public override Task OnDisconnected(bool stopCalled)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             RemoveUser(Context.ConnectionId);
-            return base.OnDisconnected(stopCalled);
+            await base.OnDisconnectedAsync(exception);
         }
 
         public async Task<bool> Join(string gameName, string userName)
         {
-            if(!games.ContainsKey(gameName))
+            if (!games.ContainsKey(gameName))
             {
                 return false;
             }
@@ -113,12 +130,12 @@ namespace GMRTSServer
 
         public async Task<bool> JoinAndMaybeCreate(string gameName, string userName)
         {
-            if(!games.ContainsKey(gameName))
+            if (!games.ContainsKey(gameName))
             {
-                games.Add(gameName, new Game(GlobalHost.ConnectionManager.GetHubContext<GameHub>()));
+                games.Add(gameName, new Game(context)); ;//GlobalHost.ConnectionManager.GetHubContext<GameHub>()));
             }
 
-            if(!JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName))
+            if (!JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName))
             {
                 games.Remove(gameName);
                 return false;
@@ -160,12 +177,17 @@ namespace GMRTSServer
 
         private void RemoveUser(string id)
         {
-            if(usersFromIDs.ContainsKey(id))
+            if (usersFromIDs.ContainsKey(id))
             {
                 User user = usersFromIDs[id];
                 usersFromIDs.Remove(id);
                 RemoveUserFromGame(user);
             }
+        }
+
+        public GameHub(IHubContext<GameHub> context)
+        {
+            this.context = context;
         }
     }
 }

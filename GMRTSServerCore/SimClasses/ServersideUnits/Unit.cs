@@ -1,6 +1,7 @@
 ﻿using GMRTSClasses.STCTransferData;
 
-using GMRTSServer.UnitStates;
+using GMRTSServerCore.SimClasses;
+using GMRTSServerCore.SimClasses.UnitStates;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GMRTSServer.ServersideUnits
+namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
     internal abstract class Unit
     {
@@ -22,6 +23,11 @@ namespace GMRTSServer.ServersideUnits
         public float Rotation { get; set; }
 
         public LinkedList<IUnitOrder> Orders { get; set; }
+
+        /// <summary>
+        /// Temporary!
+        /// </summary>
+        public float VelocityMagnitude = 20f;
 
         public abstract bool TryShoot(Unit target);
 
@@ -62,10 +68,12 @@ namespace GMRTSServer.ServersideUnits
 
         public User Owner { get; set; }
 
-        public Unit(Guid id)
+        public Unit(Guid id, User owner, Game game)
         {
             ID = id;
             Orders = new LinkedList<IUnitOrder>();
+            this.Owner = owner;
+            this.Game = game;
         }
     }
 }

@@ -22,7 +22,8 @@ namespace GMRTSConsoleClient
         static async Task Main(string[] args)
         {
 
-            SignalRClient client = new SignalRClient("http://localhost:61337/", "GameHub", a => units[a], TimeSpan.FromMilliseconds(400));
+            SignalRClient client = new SignalRClient("http://localhost:53694/server", a => units[a], TimeSpan.FromMilliseconds(400));
+            Console.ReadLine();
             bool success = await client.TryStart();
             Console.WriteLine(success ? "Success!" : "Failure");
             Console.ReadLine();
@@ -35,9 +36,9 @@ namespace GMRTSConsoleClient
             await Task.Run(async () =>
             {
                 bool keepGoing = true;
-                while(keepGoing)
+                while (keepGoing)
                 {
-                    lock(locker)
+                    lock (locker)
                     {
                         keepGoing = !gameStarted;
                     }
@@ -45,9 +46,10 @@ namespace GMRTSConsoleClient
                 }
             });
             Console.ReadLine();
-            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() } });
-            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 250), UnitIDs = new List<Guid> { units.Keys.First() } });
-            await client.MoveAction(new MoveAction() { Position = new Vector2(0, 0), UnitIDs = new List<Guid> { units.Keys.First() } });
+            MoveAction act = new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() };
+            await client.MoveAction(act);// new MoveAction() { Position = new Vector2(100, 200), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() });
+            await client.MoveAction(new MoveAction() { Position = new Vector2(100, 250), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() });
+            await client.MoveAction(new MoveAction() { Position = new Vector2(0, 0), UnitIDs = new List<Guid> { units.Keys.First() }, RequeueOnCompletion = false, ActionID = Guid.NewGuid() });
             Console.WriteLine("Moves requested");
             Console.ReadLine();
         }
@@ -55,7 +57,7 @@ namespace GMRTSConsoleClient
         private static void Client_OnGameStart(DateTime obj)
         {
             Console.WriteLine($"Game started at {obj.ToLocalTime()}");
-            lock(locker)
+            lock (locker)
             {
                 gameStarted = true;
             }
@@ -64,7 +66,7 @@ namespace GMRTSConsoleClient
         private static void Client_SpawnUnit(GMRTSClasses.STCTransferData.UnitSpawnData obj)
         {
             Unit unit = null;
-            switch(obj.Type)
+            switch (obj.Type)
             {
                 case "Tank":
                     unit = new Tank(obj.ID);
