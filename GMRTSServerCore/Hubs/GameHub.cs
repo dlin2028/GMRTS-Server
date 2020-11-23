@@ -34,7 +34,7 @@ namespace GMRTSServerCore.Hubs
             {
                 return;
             }
-            throw new NotImplementedException();
+            usersFromIDs[Context.ConnectionId].CurrentGame.AssistIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
         public async Task Attack(AttackAction act)
@@ -43,7 +43,7 @@ namespace GMRTSServerCore.Hubs
             {
                 return;
             }
-            throw new NotImplementedException();
+            usersFromIDs[Context.ConnectionId].CurrentGame.AttackIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
         public async Task BuildBuilding(BuildBuildingAction act)
@@ -79,12 +79,45 @@ namespace GMRTSServerCore.Hubs
             }
         }
 
-        public async Task Replace(ReplaceAction act)
+        public async Task Replace(ReplaceAction metaAct)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
                 return;
             }
+            ClientAction act = metaAct.NewAction;
+
+            if (act is MoveAction m)
+            {
+                usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(m, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
+            }
+            else if (act is BuildBuildingAction b)
+            {
+                throw new NotImplementedException();
+                //await BuildBuilding(b);
+            }
+            else if (act is AttackAction at)
+            {
+                usersFromIDs[Context.ConnectionId].CurrentGame.AttackIfCan(at, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
+            }
+            else if (act is AssistAction @as)
+            {
+                usersFromIDs[Context.ConnectionId].CurrentGame.AssistIfCan(@as, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
+        public async Task Delete(DeleteAction act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return;
+            }
+
+            usersFromIDs[Context.ConnectionId].CurrentGame.DeleteIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
         public async Task Move(MoveAction act)
