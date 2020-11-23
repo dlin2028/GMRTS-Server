@@ -1,4 +1,6 @@
-﻿using GMRTSClasses.CTSTransferData.UnitGround;
+﻿using GMRTSClasses.CTSTransferData.MetaActions;
+using GMRTSClasses.CTSTransferData.UnitGround;
+using GMRTSClasses.CTSTransferData.UnitUnit;
 using GMRTSClasses.STCTransferData;
 
 using GMRTSServerCore.Hubs;
@@ -75,25 +77,194 @@ namespace GMRTSServerCore.SimClasses
             Units.Remove(unit.ID);
         }
 
+        public List<Unit> GetValidUnits(List<Guid> ids, User user)
+        {
+            List<Unit> units = new List<Unit>(ids.Count);
+            foreach (Guid unitID in ids)
+            {
+                if (!Units.ContainsKey(unitID))
+                {
+                    continue;
+                }
+
+                Unit unit = Units[unitID];
+                if (unit.Owner != user)
+                {
+                    continue;
+                }
+
+                units.Add(unit);
+            }
+
+            return units;
+        }
+
+        private static List<(LinkedListNode<IUnitOrder>, Unit)> GetOrderNodesToReplace(List<Unit> units, Guid actionToReplace)
+        {
+            List<(LinkedListNode<IUnitOrder>, Unit)> linkedListNodes = new List<(LinkedListNode<IUnitOrder>, Unit)>(units.Count);
+            foreach (Unit unit in units)
+            {
+                LinkedListNode<IUnitOrder> nodeToReplace = null;
+                var node = unit.Orders.First;
+                while (node != null)
+                {
+                    if (node.Value.ID == actionToReplace)
+                    {
+                        nodeToReplace = node;
+                        break;
+                    }
+                    node = node.Next;
+                }
+
+                if (nodeToReplace == null)
+                {
+                    continue;
+                }
+
+                linkedListNodes.Add((nodeToReplace, unit));
+            }
+            return linkedListNodes;
+        }
+
+        private static void ReplaceNode(LinkedListNode<IUnitOrder> node, IUnitOrder newOrder)
+        {
+            node.List.AddAfter(node, newOrder);
+            node.List.Remove(node);
+        }
+
+        public void DeleteIfCan(DeleteAction action, User user)
+        {
+            lock (locker)
+            {
+                var list = GetOrderNodesToReplace(GetValidUnits(action.AffectedUnits, user), action.TargetActionID);
+
+                foreach (var node in list)
+                {
+                    node.Item1.List.Remove(node.Item1);
+                }
+            }
+        }
+
         public void MoveIfCan(MoveAction action, User user)
         {
             lock (locker)
             {
-                List<Unit> affectedUnits = new List<Unit>(action.UnitIDs.Count);
-                foreach (Guid unitID in action.UnitIDs)
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                foreach (Unit unit in affectedUnits)
                 {
-                    if (!Units.ContainsKey(unitID))
-                    {
-                        continue;
-                    }
-                    Unit unit = Units[unitID];
-                    if (unit.Owner != user)
-                    {
-                        continue;
-                    }
-
-                    affectedUnits.Add(unit);
                     unit.Orders.AddLast(new MoveOrder(action, affectedUnits, unit));
+                }
+            }
+        }
+
+        public void MoveIfCan(MoveAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new MoveOrder(action, affectedUnits, node.Item2));
+                }
+            }
+        }
+
+        public void AssistIfCan(AssistAction action, User user)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner != user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                foreach (Unit unit in affectedUnits)
+                {
+                    unit.Orders.AddLast(new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
+                }
+            }
+        }
+
+        public void AssistIfCan(AssistAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner != user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new AssistOrder(action.ActionID, movementCalculator) { Assister = node.Item2, Target = targ });
+                }
+            }
+        }
+
+
+        public void AttackIfCan(AttackAction action, User user)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner == user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                foreach (Unit unit in affectedUnits)
+                {
+                    unit.Orders.AddLast(new AttackOrder(action.ActionID, movementCalculator) { Attacker = unit, Target = targ });
+                }
+            }
+        }
+
+        public void AttackIfCan(AttackAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                if (!Units.ContainsKey(action.Target))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.Target];
+
+                if (targ.Owner == user)
+                {
+                    return;
+                }
+
+                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new AttackOrder(action.ActionID, movementCalculator) { Attacker = node.Item2, Target = targ });
                 }
             }
         }
