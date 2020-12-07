@@ -37,7 +37,8 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 // TODO: Non-pathfinding computation
                 // This should be a method on the movement calculator for units that are not actively pathing (maybe idle?)
                 // Maybe something like this?
-                // velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker);
+                // Update: Ask and you shall receive
+                velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker);
 
                 // Pew pew! Pew pew!
                 Attacker.TryShoot(Target);
