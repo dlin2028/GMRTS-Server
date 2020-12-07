@@ -20,6 +20,69 @@ namespace GMRTSServerCore.SimClasses
         static float RadTwo = 1.414213562373f;
 
         
+        public Vector2 ComputeVelocity(Game game, Unit unit)
+        {
+            return MaxMagnitude(GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength, unit.VelocityMagnitude);
+        }
+
+        static Vector2 MaxMagnitude(Vector2 vec, float maxMag)
+        {
+            if (vec.LengthSquared() <= maxMag * maxMag)
+            {
+                return vec;
+            }
+
+            return Vector2.Normalize(vec) * maxMag;
+        }
+
+        public Vector2 GetBoidsVelocity(Game game, Unit unit)
+        {
+            (int x, int y) = IMovementCalculator.fromVec2(unit.Position, game.Map.TileSize);
+
+            int n = (int)unit.BoidsSettings.LargerDistance / game.Map.TileSize + 1;
+
+            var unitsInSquare = game.unitPositionLookup.UnitsWithinManhattanTiles(x, y, n);
+
+            Vector2 separationVelocity = Vector2.Zero;
+            int sepCount = 0;
+
+            Vector2 avgPos = Vector2.Zero;
+            int neighborCount = 0;
+
+            foreach(Unit other in unitsInSquare)
+            {
+                if (other == unit) continue;
+
+                Vector2 posDiff = unit.Position - other.Position;
+                float magSquare = posDiff.LengthSquared();
+
+                if (magSquare < unit.BoidsSettings.SeparationDistanceSquared)
+                {
+                    separationVelocity += posDiff / Math.Max(magSquare, 0.01f) * unit.BoidsSettings.SeparationStrength;
+                    sepCount++;
+                }
+
+                if (magSquare < unit.BoidsSettings.CohesionDistanceSquared)
+                {
+                    avgPos += other.Position;
+                    neighborCount++;
+                }
+            }
+
+            Vector2 totalVelocity = Vector2.Zero;
+
+            if (sepCount > 0)
+            {
+                totalVelocity += MaxMagnitude(separationVelocity, unit.VelocityMagnitude);// / sepCount;
+            }
+
+            if (neighborCount > 0)
+            {
+                totalVelocity += (avgPos / neighborCount - unit.Position) * unit.BoidsSettings.CohesionStrength;
+            }
+
+            return totalVelocity;
+        }
 
         public Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination)
         {
@@ -44,9 +107,13 @@ namespace GMRTSServerCore.SimClasses
                 }
             }
 
-            //MANY MANY OTHER THINGS (boids)
+            flowfieldVel *= unit.BoidsSettings.FlowfieldStrength;
 
-            return flowfieldVel * unit.VelocityMagnitude;
+            // Boids, I think
+            Vector2 boidsVel = GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength;
+
+
+            return MaxMagnitude(flowfieldVel + boidsVel, unit.VelocityMagnitude);
         }
 
         static async Task<byte[][]> ComputeFlowField(int x, int y, Map m)
