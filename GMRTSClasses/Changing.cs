@@ -27,7 +27,8 @@ namespace GMRTSClasses
 
         public Changing<T> Update(ulong currentMillis)
         {
-            Value = Changer.Add(Start, Changer.Scale((currentMillis - StartTime) / 1000f, Change));
+            // (currentMillis - StartTime) should never be negative but it apparently is sometimes, so I'm casting to long from ulong to sidestep the problem :)
+            Value = Changer.Add(Start, Changer.Scale((long)(currentMillis - StartTime) / 1000f, Change));
             return this;
             //Value = Changer.Add(Value, Changer.Scale(elapsedSeconds, Change));
         }
