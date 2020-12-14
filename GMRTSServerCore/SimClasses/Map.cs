@@ -72,6 +72,8 @@ namespace GMRTSServerCore.SimClasses
                         throw new Exception("Only grayscale images can be maps");
                     }
 
+                    if (color.R == 255) continue;
+
                     map[(x, y)] = (ushort)((255 - bmp.GetPixel(x, y).R) * ushort.MaxValue / 255);
                 }
             }
