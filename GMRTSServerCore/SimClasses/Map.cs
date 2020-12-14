@@ -49,7 +49,7 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
-        static Map FromImageFile(string filename)
+        internal static Map FromImageFile(string filename)
         {
             Bitmap bmp = new Bitmap(filename);
 
