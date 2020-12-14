@@ -86,6 +86,6 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             this.Game = game;
         }
 
-        public BoidsSettings BoidsSettings = new BoidsSettings(0.5f, 50f, 90f, 30f, 70f, 30f);
+        public BoidsSettings BoidsSettings = new BoidsSettings(0.5f, 20f, 10f, 30f, 20f, 80f);
     }
 }
