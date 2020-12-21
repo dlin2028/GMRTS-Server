@@ -43,6 +43,7 @@ namespace GMRTSClasses
             connection.On<Guid>("KillUnit", KillUnit);
             connection.On<UnitSpawnData>("AddUnit", AddUnit);
             connection.On<DateTime>("GameStarted", GameStart);
+            connection.On<ActionOver>("ActionOver", ActionDone);
         }
 
         public async Task<bool> JoinGameByName(string gameName, string userName)
@@ -128,6 +129,7 @@ namespace GMRTSClasses
         public event Action<Unit> TriggerUnitDeath;
         public event Action<UnitSpawnData> SpawnUnit;
         public event Action<DateTime> OnGameStart;
+        public event Action<ActionOver> OnActionFinish;
 
         private async void Beat()
         {
@@ -154,6 +156,11 @@ namespace GMRTSClasses
             Unit unit = getUnit(id);
             unit.Rotation = new Changing<float>(newRotation.Value, newRotation.Delta, unit.Rotation.Changer, newRotation.StartTime);
             OnRotationUpdate?.Invoke(unit, newRotation);
+        }
+
+        private void ActionDone(ActionOver actOver)
+        {
+            OnActionFinish?.Invoke(actOver);
         }
 
         private void KillUnit(Guid id)
