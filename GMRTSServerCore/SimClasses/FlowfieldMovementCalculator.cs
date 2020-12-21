@@ -22,7 +22,7 @@ namespace GMRTSServerCore.SimClasses
         
         public Vector2 ComputeVelocity(Game game, Unit unit)
         {
-            return MaxMagnitude(GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength, unit.VelocityMagnitude);
+            return MaxMagnitude(GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength, unit.BoidsSettings.MaximumBoidsVelocity);
         }
 
         static Vector2 MaxMagnitude(Vector2 vec, float maxMag)
@@ -110,7 +110,7 @@ namespace GMRTSServerCore.SimClasses
             flowfieldVel *= unit.BoidsSettings.FlowfieldStrength;
 
             // Boids, I think
-            Vector2 boidsVel = GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength;
+            Vector2 boidsVel = MaxMagnitude(GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength, unit.BoidsSettings.MaximumBoidsVelocity);
 
 
             return MaxMagnitude(flowfieldVel + boidsVel, unit.VelocityMagnitude);

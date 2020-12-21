@@ -20,7 +20,9 @@ namespace GMRTSServerCore.SimClasses
         public readonly float BoidsStrength;
         public readonly float FlowfieldStrength;
 
-        public BoidsSettings(float cohesionStrength, float cohesionDistance, float separationStrength, float separationDistance, float boidsStrength, float flowfieldStrength) : this()
+        public readonly float MaximumBoidsVelocity;
+
+        public BoidsSettings(float cohesionStrength, float cohesionDistance, float separationStrength, float separationDistance, float boidsStrength, float flowfieldStrength, float maximumBoidsVelocity) : this()
         {
             CohesionStrength = cohesionStrength;
             CohesionDistance = cohesionDistance;
@@ -35,6 +37,8 @@ namespace GMRTSServerCore.SimClasses
 
             BoidsStrength = boidsStrength;
             FlowfieldStrength = flowfieldStrength;
+
+            MaximumBoidsVelocity = maximumBoidsVelocity;
         }
     }
 }
