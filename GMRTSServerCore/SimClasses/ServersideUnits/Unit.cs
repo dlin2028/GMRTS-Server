@@ -64,6 +64,8 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
                 Orders.AddLast(Orders.First.Value);
             }
 
+            Game.QueueActionOver(this, Orders.First.Value.ID);
+
             Orders.RemoveFirst();
         }
 

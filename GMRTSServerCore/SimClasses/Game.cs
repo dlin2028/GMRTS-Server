@@ -10,6 +10,7 @@ using GMRTSServerCore.SimClasses.UnitStates;
 using Microsoft.AspNetCore.SignalR;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -79,6 +80,8 @@ namespace GMRTSServerCore.SimClasses
         //public Dictionary<User, List<Unit>> Units { get; set; } = new Dictionary<User, List<Unit>>();
         public Dictionary<Guid, Unit> Units { get; set; } = new Dictionary<Guid, Unit>();
         private long currentMillis = 0;
+
+        private ConcurrentBag<(Unit, Guid)> ActionOversToSend = new ConcurrentBag<(Unit, Guid)>();
 
         private void Remove(Unit unit)
         {
@@ -278,6 +281,11 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        public void QueueActionOver(Unit unit, Guid actionID)
+        {
+            ActionOversToSend.Add((unit, actionID));
+        }
+
         public async Task StartAt(DateTime utcStart)
         {
             TimeSpan wait = utcStart - DateTime.UtcNow;
@@ -335,6 +343,13 @@ namespace GMRTSServerCore.SimClasses
                     unit.Update(currentMillis, elapsedTime);
                 }
             }
+
+            foreach((Unit unit, Guid actionID) in ActionOversToSend)
+            {
+                await Context.Clients.Client(unit.Owner.ID).SendAsync("ActionDone", new ActionOver() { ActionID = actionID, Units = new List<Guid>() { unit.ID } });
+            }
+
+            ActionOversToSend.Clear();
 
             List<Guid> toKill = new List<Guid>();
             foreach (Unit unit in Units.Values)
