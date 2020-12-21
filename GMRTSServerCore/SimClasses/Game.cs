@@ -346,7 +346,7 @@ namespace GMRTSServerCore.SimClasses
 
             foreach((Unit unit, Guid actionID) in ActionOversToSend)
             {
-                await Context.Clients.Client(unit.Owner.ID).SendAsync("ActionDone", new ActionOver() { ActionID = actionID, Units = new List<Guid>() { unit.ID } });
+                await Context.Clients.Client(unit.Owner.ID).SendAsync("ActionOver", new ActionOver() { ActionID = actionID, Units = new List<Guid>() { unit.ID } });
             }
 
             ActionOversToSend.Clear();
