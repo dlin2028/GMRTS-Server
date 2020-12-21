@@ -16,11 +16,19 @@ namespace GMRTSClasses.Units
         public Unit()
         {
             ID = Guid.NewGuid();
+
+            Position = new GMRTSClasses.Changing<System.Numerics.Vector2>(System.Numerics.Vector2.Zero, System.Numerics.Vector2.Zero, Vector2Changer.VectorChanger, 0);
+            Rotation = new GMRTSClasses.Changing<float>(0, 0, FloatChanger.FChanger, 0);
+            Health = new GMRTSClasses.Changing<float>(100, 0, FloatChanger.FChanger, 0);
         }
 
         public Unit(Guid id)
         {
             ID = id;
+
+            Position = new GMRTSClasses.Changing<System.Numerics.Vector2>(System.Numerics.Vector2.Zero, System.Numerics.Vector2.Zero, Vector2Changer.VectorChanger, 0);
+            Rotation = new GMRTSClasses.Changing<float>(0, 0, FloatChanger.FChanger, 0);
+            Health = new GMRTSClasses.Changing<float>(100, 0, FloatChanger.FChanger, 0);
         }
 
         public Changing<float> Health { get; set; }
