@@ -49,7 +49,7 @@ namespace GMRTSServerCore.SimClasses
             Vector2 avgPos = Vector2.Zero;
             int neighborCount = 0;
 
-            foreach(Unit other in unitsInSquare)
+            foreach (Unit other in unitsInSquare)
             {
                 if (other == unit) continue;
 
@@ -62,7 +62,7 @@ namespace GMRTSServerCore.SimClasses
                     sepCount++;
                 }
 
-                if (magSquare < unit.BoidsSettings.CohesionDistanceSquared)
+                if (magSquare < unit.BoidsSettings.CohesionDistanceSquared && ((unit.Orders.Count == 0 && other.Orders.Count == 0) || (unit.Orders.First.Value.ID == other.Orders.First.Value.ID)))
                 {
                     avgPos += other.Position;
                     neighborCount++;
