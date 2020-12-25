@@ -25,8 +25,6 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         {
             Vector2 velocity = Vector2.Zero;
 
-            Assister.Position += velocity * elapsedTime;
-
             if ((Assister.Position - Target.Position).LengthSquared() > 2500)
             {
                 velocity = movementCalculator.ComputeVelocity(Assister.Game, Assister, Target.Position);
@@ -53,6 +51,8 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 Assister.PositionUpdate = new GMRTSClasses.STCTransferData.ChangingData<Vector2>(currentMilliseconds, Assister.Position, velocity);
                 Assister.UpdatePosition = true;
             }
+
+            Assister.Position += velocity * elapsedTime;
 
             return ContOrStop.Continue;
         }
