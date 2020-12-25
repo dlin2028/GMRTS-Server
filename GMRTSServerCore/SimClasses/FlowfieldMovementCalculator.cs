@@ -62,7 +62,7 @@ namespace GMRTSServerCore.SimClasses
                     sepCount++;
                 }
 
-                if (magSquare < unit.BoidsSettings.CohesionDistanceSquared && ((unit.Orders.Count == 0 && other.Orders.Count == 0) || (unit.Orders.First.Value.ID == other.Orders.First.Value.ID)))
+                if (magSquare < unit.BoidsSettings.CohesionDistanceSquared && (unit.Orders.First?.Value?.ID == other.Orders.First?.Value?.ID))
                 {
                     avgPos += other.Position;
                     neighborCount++;
