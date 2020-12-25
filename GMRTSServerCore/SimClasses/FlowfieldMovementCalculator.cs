@@ -78,7 +78,7 @@ namespace GMRTSServerCore.SimClasses
 
             if (neighborCount > 0)
             {
-                totalVelocity += (avgPos / neighborCount - unit.Position) * unit.BoidsSettings.CohesionStrength;
+                totalVelocity += MaxMagnitude((avgPos / neighborCount - unit.Position) * unit.BoidsSettings.CohesionStrength, unit.BoidsSettings.CohesionMaxMag);
             }
 
             return totalVelocity;
