@@ -18,6 +18,8 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         public float Health { get; set; }
 
+        public bool IsIdling { get; private set; }
+
         private Vector2 pos;
         public Vector2 Position
         {
@@ -31,6 +33,8 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         }
 
         public float Rotation { get; set; }
+
+        public IdleOrder IdleOrder { get; }
 
         public LinkedList<IUnitOrder> Orders { get; set; }
 
@@ -49,8 +53,17 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         {
             if (Orders.Count == 0)
             {
+                if (!IsIdling)
+                {
+                    IdleOrder.NoLongerIdle();
+                }
+                IsIdling = true;
+
+                IdleOrder.Update(currentMilliseconds, elapsedTime);
                 return;
             }
+
+            IsIdling = false;
 
             ContOrStop keepGoing = Orders.First.Value.Update(currentMilliseconds, elapsedTime);
             
@@ -86,6 +99,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             Orders = new LinkedList<IUnitOrder>();
             this.Owner = owner;
             this.Game = game;
+            IdleOrder = new IdleOrder(this);
         }
 
         public BoidsSettings BoidsSettings = new BoidsSettings(30f, 0.5f, 20f, 10f, 30f, 20f, 80f, 70f);
