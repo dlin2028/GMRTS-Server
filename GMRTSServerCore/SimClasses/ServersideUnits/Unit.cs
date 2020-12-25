@@ -102,6 +102,13 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             IdleOrder = new IdleOrder(this);
         }
 
-        public BoidsSettings BoidsSettings = new BoidsSettings(30f, 0.5f, 20f, 10f, 30f, 20f, 80f, 70f);
+        public BoidsSettings BoidsSettings = new BoidsSettings(cohesionMaxMag:          30f,
+                                                               cohesionStrength:        0.5f,
+                                                               cohesionDistance:        20f,
+                                                               separationStrength:      10f,
+                                                               separationDistance:      15f,
+                                                               boidsStrength:           20f,
+                                                               flowfieldStrength:       80f,
+                                                               maximumBoidsVelocity:    70f);
     }
 }
