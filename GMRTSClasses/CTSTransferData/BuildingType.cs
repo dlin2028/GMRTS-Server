@@ -9,7 +9,7 @@ namespace GMRTSClasses.CTSTransferData
     public enum BuildingType
     {
         Factory,
-        EnergyGen,
-        MetalGen
+        Supermarket,
+        Mine
     }
 }

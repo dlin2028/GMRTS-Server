@@ -1,4 +1,5 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.FactoryActions;
 using GMRTSClasses.CTSTransferData.MetaActions;
 using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.CTSTransferData.UnitUnit;
@@ -44,6 +45,8 @@ namespace GMRTSClasses
             connection.On<UnitSpawnData>("AddUnit", AddUnit);
             connection.On<DateTime>("GameStarted", GameStart);
             connection.On<ActionOver>("ActionOver", ActionDone);
+            connection.On<OrderCompleted>("OrderFinished", OrderFinished);
+            connection.On<ResourceUpdate>("ResourceUpdated", ResourceUpdated);
         }
 
         public async Task<bool> JoinGameByName(string gameName, string userName)
@@ -101,6 +104,11 @@ namespace GMRTSClasses
             await connection.InvokeAsync("Arbitrary", action);
         }
 
+        public async Task<bool> FactoryAct(FactoryAction action)
+        {
+            return await connection.InvokeAsync<bool>("FactoryAct", action);
+        }
+
         public async Task<bool> TryStart()
         {
             bool faulted = false;
@@ -130,6 +138,8 @@ namespace GMRTSClasses
         public event Action<UnitSpawnData> SpawnUnit;
         public event Action<DateTime> OnGameStart;
         public event Action<ActionOver> OnActionFinish;
+        public event Action<ResourceUpdate> OnResourceUpdated;
+        public event Action<OrderCompleted> OnOrderCompleted;
 
         private async void Beat()
         {
@@ -177,6 +187,16 @@ namespace GMRTSClasses
         private void GameStart(DateTime time)
         {
             OnGameStart?.Invoke(time);
+        }
+
+        private void OrderFinished(OrderCompleted completed)
+        {
+            OnOrderCompleted?.Invoke(completed);
+        }
+
+        private void ResourceUpdated(ResourceUpdate update)
+        {
+            OnResourceUpdated?.Invoke(update);
         }
     }
 }
