@@ -13,6 +13,8 @@ namespace GMRTSServerCore.SimClasses
 
         public string CurrentUsername { get; set; }
         public Game CurrentGame { get; set; }
+        public float Money = 100;
+        public float Mineral = 100;
         public List<Unit> Units { get; set; } = new List<Unit>();
 
         public User(string id)

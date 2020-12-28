@@ -1,4 +1,6 @@
-﻿using GMRTSClasses.CTSTransferData.MetaActions;
+﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.FactoryActions;
+using GMRTSClasses.CTSTransferData.MetaActions;
 using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.CTSTransferData.UnitUnit;
 using GMRTSClasses.STCTransferData;
@@ -43,6 +45,8 @@ namespace GMRTSServerCore.SimClasses
             }
 
             Users.Add(user);
+            user.Money = 100;
+            user.Mineral = 100;
 
             Unit unit = new Builder(Guid.NewGuid(), user, this);
             user.Units.Add(unit);
@@ -109,6 +113,22 @@ namespace GMRTSServerCore.SimClasses
             }
 
             return units;
+        }
+
+        internal void SpawnBuildingAndChargeUser(User user, BuildingType buildingType, Vector2 position)
+        {
+            user.Money -= 20;
+            user.Mineral -= 20;
+            Building building = buildingType switch
+            {
+                BuildingType.Factory => new Factory(Guid.NewGuid(), user, user.CurrentGame),
+                BuildingType.Mine => new Mine(Guid.NewGuid(), user, user.CurrentGame),
+                BuildingType.Supermarket => new Supermarket(Guid.NewGuid(), user, user.CurrentGame),
+                _ => throw new Exception(),
+            };
+
+            Units.Add(building.ID, building);
+            user.Units.Add(building);
         }
 
         private static List<(LinkedListNode<IUnitOrder>, Unit)> GetOrderNodesToReplace(List<Unit> units, Guid actionToReplace)
@@ -254,6 +274,41 @@ namespace GMRTSServerCore.SimClasses
                     unit.Orders.AddLast(new AttackOrder(action.ActionID, movementCalculator) { Attacker = unit, Target = targ });
                 }
             }
+        }
+
+        public bool EnqueueBuildOrder(User user, EnqueueBuildOrder enq)
+        {
+            if (!Units.ContainsKey(enq.TargetFactory))
+            {
+                return false;
+            }
+
+            Unit maybeFact = Units[enq.TargetFactory];
+            if (!(maybeFact is Factory factory))
+            {
+                return false;
+            }
+
+            if (factory.Owner != user)
+            {
+                return false;
+            }
+
+            throw new NotImplementedException("Should get price");
+            int mineralPrice = 30;
+            int moneyPrice = 40;
+
+            if (user.Money < moneyPrice || user.Mineral < mineralPrice)
+            {
+                return false;
+            }
+
+            user.Money   -= moneyPrice;
+            user.Mineral -= mineralPrice;
+
+            throw new NotImplementedException("Should enqueue thingy to factory");
+
+            return true;
         }
 
         public void AttackIfCan(AttackAction action, User user, Guid actionToReplace)

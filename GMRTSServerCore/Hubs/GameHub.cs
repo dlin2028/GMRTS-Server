@@ -1,4 +1,5 @@
 ﻿using GMRTSClasses.CTSTransferData;
+using GMRTSClasses.CTSTransferData.FactoryActions;
 using GMRTSClasses.CTSTransferData.MetaActions;
 using GMRTSClasses.CTSTransferData.UnitGround;
 using GMRTSClasses.CTSTransferData.UnitUnit;
@@ -128,6 +129,26 @@ namespace GMRTSServerCore.Hubs
             }
             Console.WriteLine($"Enqueued action: Move {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Position}");
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
+        }
+
+        public async Task<bool> FactoryAct(FactoryAction factoryAction)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
+            {
+                return false;
+            }
+
+            if (factoryAction is EnqueueBuildOrder enqueue)
+            {
+                return usersFromIDs[Context.ConnectionId].CurrentGame.EnqueueBuildOrder(usersFromIDs[Context.ConnectionId], enqueue);
+            }
+
+            if (factoryAction is CancelBuildOrder cancel)
+            {
+                return usersFromIDs[Context.ConnectionId].CurrentGame.CancelBuildOrder(usersFromIDs[Context.ConnectionId], cancel);
+            }
+
+            return false;
         }
 
         public async Task ReqStartGame()
