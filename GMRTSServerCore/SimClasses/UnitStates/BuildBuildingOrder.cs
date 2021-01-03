@@ -1,4 +1,5 @@
-﻿using GMRTSClasses.CTSTransferData;
+﻿using GMRTSClasses.ConstructionOrderDetails;
+using GMRTSClasses.CTSTransferData;
 
 using GMRTSServerCore.SimClasses.ServersideUnits;
 
@@ -21,8 +22,8 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         public BuildingType FinalType;
         public Vector2 TargetPosition;
 
-        public int RequiredMoney;
-        public int RequiredMineral;
+        public float RequiredMoney;
+        public float RequiredMineral;
 
         public Unit Builder;
 
@@ -63,12 +64,12 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             return ContOrStop.Continue;
         }
 
-        public BuildBuildingOrder(Guid id, IMovementCalculator movementCalculator, BuildingType buildingType, Vector2 buildingPos, float neededMoney, float neededMineral)
+        public BuildBuildingOrder(Guid id, IMovementCalculator movementCalculator, BuildingType buildingType, Vector2 buildingPos)
         {
             ID = id;
             this.movementCalculator = movementCalculator;
-            RequiredMineral = (int)neededMineral;
-            RequiredMoney = (int)neededMoney;
+            RequiredMineral = Prices.BuildingPriceData[buildingType].RequiredMineral;
+            RequiredMoney = Prices.BuildingPriceData[buildingType].RequiredMoney;
             FinalType = buildingType;
             TargetPosition = buildingPos;
         }

@@ -1,4 +1,5 @@
-﻿using GMRTSClasses.CTSTransferData;
+﻿using GMRTSClasses.ConstructionOrderDetails;
+using GMRTSClasses.CTSTransferData;
 using GMRTSClasses.CTSTransferData.FactoryActions;
 using GMRTSClasses.CTSTransferData.MetaActions;
 using GMRTSClasses.CTSTransferData.UnitGround;
@@ -117,8 +118,8 @@ namespace GMRTSServerCore.SimClasses
 
         internal void SpawnBuildingAndChargeUser(User user, BuildingType buildingType, Vector2 position)
         {
-            user.Money -= 20;
-            user.Mineral -= 20;
+            user.Money -= Prices.BuildingPriceData[buildingType].RequiredMoney;
+            user.Mineral -= Prices.BuildingPriceData[buildingType].RequiredMineral;
             Building building = buildingType switch
             {
                 BuildingType.Factory => new Factory(Guid.NewGuid(), user, user.CurrentGame),
@@ -309,6 +310,27 @@ namespace GMRTSServerCore.SimClasses
             throw new NotImplementedException("Should enqueue thingy to factory");
 
             return true;
+        }
+
+        public bool CancelBuildOrder(User user, CancelBuildOrder cancel)
+        {
+            if (!Units.ContainsKey(cancel.TargetFactory))
+            {
+                return false;
+            }
+
+            Unit maybeFact = Units[cancel.TargetFactory];
+            if (!(maybeFact is Factory factory))
+            {
+                return false;
+            }
+
+            if (factory.Owner != user)
+            {
+                return false;
+            }
+
+            throw new NotImplementedException("Needs to check if factory has order, cancel it, and readd the resources to the player");
         }
 
         public void AttackIfCan(AttackAction action, User user, Guid actionToReplace)
