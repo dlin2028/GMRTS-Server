@@ -7,13 +7,15 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
     internal class Mine : Building
     {
+        public const float MineralPerSecond = 10f;
+
         public Mine(Guid id, User owner, Game game) : base(id, owner, game)
         {
         }
 
         public override void Update(ulong currentMilliseconds, float elapsedTime)
         {
-            throw new NotImplementedException();
+            Owner.Mineral += MineralPerSecond * elapsedTime;
 
             base.Update(currentMilliseconds, elapsedTime);
         }

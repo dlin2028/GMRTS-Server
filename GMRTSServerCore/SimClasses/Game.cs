@@ -88,6 +88,9 @@ namespace GMRTSServerCore.SimClasses
 
         private ConcurrentBag<(Unit, Guid)> ActionOversToSend = new ConcurrentBag<(Unit, Guid)>();
 
+        private List<Unit> ToSpawn = new List<Unit>();
+        private ConcurrentBag<(User, OrderCompleted)> OrderCompletedsToSend = new ConcurrentBag<(User, OrderCompleted)>();
+
         private void Remove(Unit unit)
         {
             unit.Owner.Units.Remove(unit);
@@ -128,8 +131,11 @@ namespace GMRTSServerCore.SimClasses
                 _ => throw new Exception(),
             };
 
-            Units.Add(building.ID, building);
-            user.Units.Add(building);
+            building.Position = position;
+            building.PositionUpdate = new ChangingData<Vector2>(0, position, Vector2.Zero);
+            building.UpdatePosition = true;
+
+            ToSpawn.Add(building);
         }
 
         private static List<(LinkedListNode<IUnitOrder>, Unit)> GetOrderNodesToReplace(List<Unit> units, Guid actionToReplace)
@@ -295,11 +301,15 @@ namespace GMRTSServerCore.SimClasses
                 return false;
             }
 
-            throw new NotImplementedException("Should get price");
-            int mineralPrice = 30;
-            int moneyPrice = 40;
+            float mineralPrice = Prices.UnitPriceData[enq.UnitType].RequiredMineral;
+            float moneyPrice = Prices.UnitPriceData[enq.UnitType].RequiredMoney;
 
             if (user.Money < moneyPrice || user.Mineral < mineralPrice)
+            {
+                return false;
+            }
+
+            if (!factory.TryEnqueue(enq.OrderID, enq.UnitType))
             {
                 return false;
             }
@@ -307,9 +317,36 @@ namespace GMRTSServerCore.SimClasses
             user.Money   -= moneyPrice;
             user.Mineral -= mineralPrice;
 
-            throw new NotImplementedException("Should enqueue thingy to factory");
-
             return true;
+        }
+
+        internal void SpawnUnit(GMRTSClasses.Units.MobileUnitType unitType, Vector2 position, User owner)
+        {
+            Unit unit;
+            switch (unitType)
+            {
+                case GMRTSClasses.Units.MobileUnitType.Tank:
+                    unit = new Tank(Guid.NewGuid(), owner, this);
+                    break;
+                case GMRTSClasses.Units.MobileUnitType.Builder:
+                    unit = new Builder(Guid.NewGuid(), owner, this);
+                    break;
+                default:
+                    throw new Exception("Spawning units of this type is unimplemented");
+            }
+            unit.Position = position;
+            unit.PositionUpdate = new ChangingData<Vector2>(0, position, Vector2.Zero);
+            unit.UpdatePosition = true;
+
+            
+
+
+            ToSpawn.Add(unit);
+        }
+
+        internal void TellOwnerOrderFinished(User owner, Guid factoryID, Guid orderID)
+        {
+            OrderCompletedsToSend.Add((owner, new OrderCompleted() { FactoryID = factoryID, OrderID = orderID }));
         }
 
         public bool CancelBuildOrder(User user, CancelBuildOrder cancel)
@@ -330,7 +367,22 @@ namespace GMRTSServerCore.SimClasses
                 return false;
             }
 
-            throw new NotImplementedException("Needs to check if factory has order, cancel it, and readd the resources to the player");
+            UnitConstructionOrder ord = factory.GetOrder(cancel.OrderID);
+
+            if (ord == null)
+            {
+                return false;
+            }
+
+            if (!factory.TryCancel(cancel.OrderID))
+            {
+                return false;
+            }
+
+            user.Mineral += Prices.UnitPriceData[ord.UnitType].RequiredMineral;
+            user.Money += Prices.UnitPriceData[ord.UnitType].RequiredMoney;
+
+            return true;
         }
 
         public void AttackIfCan(AttackAction action, User user, Guid actionToReplace)
@@ -426,7 +478,32 @@ namespace GMRTSServerCore.SimClasses
                 await Context.Clients.Client(unit.Owner.ID).SendAsync("ActionOver", new ActionOver() { ActionID = actionID, Units = new List<Guid>() { unit.ID } });
             }
 
+            foreach((User user, OrderCompleted comp) in OrderCompletedsToSend)
+            {
+                await Context.Clients.Client(user.ID).SendAsync("OrderFinished", comp);
+            }
+
+            foreach(Unit unit in ToSpawn)
+            {
+                Units.Add(unit.ID, unit);
+                unit.Owner.Units.Add(unit);
+
+                foreach(User user in Users)
+                {
+                    await Context.Clients.Client(user.ID).SendAsync("AddUnit", new UnitSpawnData() { ID = unit.ID, OwnerUsername = unit.Owner.CurrentUsername, Type = unit.GetType().Name });
+                }    
+            }
+
+            ToSpawn.Clear();
+
             ActionOversToSend.Clear();
+            OrderCompletedsToSend.Clear();
+
+            foreach(User user in Users)
+            {
+                await Context.Clients.Client(user.ID).SendAsync("ResourceUpdated", new ResourceUpdate() { ResourceType = ResourceType.Mineral, Value = new GMRTSClasses.Changing<float>(user.Mineral, 0, GMRTSClasses.FloatChanger.FChanger, currentMillis) });
+                await Context.Clients.Client(user.ID).SendAsync("ResourceUpdated", new ResourceUpdate() { ResourceType = ResourceType.Money, Value = new GMRTSClasses.Changing<float>(user.Money, 0, GMRTSClasses.FloatChanger.FChanger, currentMillis) });
+            }
 
             List<Guid> toKill = new List<Guid>();
             foreach (Unit unit in Units.Values)
