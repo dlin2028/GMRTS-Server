@@ -59,30 +59,6 @@ namespace GMRTSServerCore.Hubs
             return Task.CompletedTask;
         }
 
-        public async Task Arbitrary(ClientAction act)
-        {
-            if (act is MoveAction m)
-            {
-                await Move(m);
-            }
-            else if (act is BuildBuildingAction b)
-            {
-                await BuildBuilding(b);
-            }
-            else if (act is AttackAction at)
-            {
-                await Attack(at);
-            }
-            else if (act is AssistAction @as)
-            {
-                await Assist(@as);
-            }
-            else
-            {
-                throw new Exception();
-            }
-        }
-
         public Task Replace(ReplaceAction metaAct)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
@@ -137,24 +113,24 @@ namespace GMRTSServerCore.Hubs
             return Task.CompletedTask;
         }
 
-        public Task<bool> FactoryAct(FactoryAction factoryAction)
+        public Task<bool> FactoryEnqueue(EnqueueBuildOrder order)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
                 return Task.FromResult(false);
             }
 
-            if (factoryAction is EnqueueBuildOrder enqueue)
+            return Task.FromResult(usersFromIDs[Context.ConnectionId].CurrentGame.EnqueueBuildOrder(usersFromIDs[Context.ConnectionId], order));
+        }
+
+        public Task<bool> FactoryCancel(CancelBuildOrder cancel)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return Task.FromResult(usersFromIDs[Context.ConnectionId].CurrentGame.EnqueueBuildOrder(usersFromIDs[Context.ConnectionId], enqueue));
+                return Task.FromResult(false);
             }
 
-            if (factoryAction is CancelBuildOrder cancel)
-            {
-                return Task.FromResult(usersFromIDs[Context.ConnectionId].CurrentGame.CancelBuildOrder(usersFromIDs[Context.ConnectionId], cancel));
-            }
-
-            return Task.FromResult(false);
+            return Task.FromResult(usersFromIDs[Context.ConnectionId].CurrentGame.CancelBuildOrder(usersFromIDs[Context.ConnectionId], cancel));
         }
 
         public Task ReqStartGame()
