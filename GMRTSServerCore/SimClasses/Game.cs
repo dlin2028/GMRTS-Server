@@ -284,6 +284,55 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        public void BuildBuildingIfCan(BuildBuildingAction action, User user)
+        {
+            lock (locker)
+            {
+                if (Map[IMovementCalculator.fromVec2(action.Position, Map.TileSize)] >= ushort.MaxValue / 2)
+                {
+                    return;
+                }
+
+                if (!action.UnitIDs.Any(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.UnitIDs.First(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user)];
+
+                List<Unit> affectedUnits = new List<Unit>() { targ };
+                foreach (Unit unit in affectedUnits)
+                {
+                    unit.Orders.AddLast(new BuildBuildingOrder(action.ActionID, movementCalculator, action.BuildingType, action.Position) { Builder = targ });//new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
+                }
+            }
+        }
+
+        public void BuildBuildingIfCan(BuildBuildingAction action, User user, Guid actionToReplace)
+        {
+            lock (locker)
+            {
+                if (Map[IMovementCalculator.fromVec2(action.Position, Map.TileSize)] >= ushort.MaxValue / 2)
+                {
+                    return;
+                }
+
+                if (!action.UnitIDs.Any(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user))
+                {
+                    return;
+                }
+
+                Unit targ = Units[action.UnitIDs.First(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user)];
+
+                List<Unit> affectedUnits = new List<Unit>() { targ };
+                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+                foreach (var node in nodes)
+                {
+                    ReplaceNode(node.Item1, new BuildBuildingOrder(action.ActionID, movementCalculator, action.BuildingType, action.Position) { Builder = node.Item2 });//new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
+                }
+            }
+        }
+
         public bool EnqueueBuildOrder(User user, EnqueueBuildOrder enq)
         {
             if (!Units.ContainsKey(enq.TargetFactory))
@@ -315,7 +364,7 @@ namespace GMRTSServerCore.SimClasses
                 return false;
             }
 
-            user.Money   -= moneyPrice;
+            user.Money -= moneyPrice;
             user.Mineral -= mineralPrice;
 
             return true;
@@ -339,7 +388,7 @@ namespace GMRTSServerCore.SimClasses
             unit.PositionUpdate = new ChangingData<Vector2>(0, position, Vector2.Zero);
             unit.UpdatePosition = true;
 
-            
+
 
 
             ToSpawn.Add(unit);
@@ -474,25 +523,25 @@ namespace GMRTSServerCore.SimClasses
                 }
             }
 
-            foreach((Unit unit, Guid actionID) in ActionOversToSend)
+            foreach ((Unit unit, Guid actionID) in ActionOversToSend)
             {
                 await Context.Clients.Client(unit.Owner.ID).SendAsync("ActionOver", new ActionOver() { ActionID = actionID, Units = new List<Guid>() { unit.ID } });
             }
 
-            foreach((User user, OrderCompleted comp) in OrderCompletedsToSend)
+            foreach ((User user, OrderCompleted comp) in OrderCompletedsToSend)
             {
                 await Context.Clients.Client(user.ID).SendAsync("OrderFinished", comp);
             }
 
-            foreach(Unit unit in ToSpawn)
+            foreach (Unit unit in ToSpawn)
             {
                 Units.Add(unit.ID, unit);
                 unit.Owner.Units.Add(unit);
 
-                foreach(User user in Users)
+                foreach (User user in Users)
                 {
                     await Context.Clients.Client(user.ID).SendAsync("AddUnit", new UnitSpawnData() { ID = unit.ID, OwnerUsername = unit.Owner.CurrentUsername, Type = unit.GetType().Name });
-                }    
+                }
             }
 
             ToSpawn.Clear();
@@ -500,7 +549,7 @@ namespace GMRTSServerCore.SimClasses
             ActionOversToSend.Clear();
             OrderCompletedsToSend.Clear();
 
-            foreach(User user in Users)
+            foreach (User user in Users)
             {
                 await Context.Clients.Client(user.ID).SendAsync("ResourceUpdated", new ResourceUpdate() { ResourceType = ResourceType.Mineral, Value = new GMRTSClasses.Changing<float>(user.Mineral, 0, GMRTSClasses.FloatChanger.FChanger, currentMillis) });
                 await Context.Clients.Client(user.ID).SendAsync("ResourceUpdated", new ResourceUpdate() { ResourceType = ResourceType.Money, Value = new GMRTSClasses.Changing<float>(user.Money, 0, GMRTSClasses.FloatChanger.FChanger, currentMillis) });

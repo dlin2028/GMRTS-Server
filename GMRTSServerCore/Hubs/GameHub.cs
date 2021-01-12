@@ -53,7 +53,7 @@ namespace GMRTSServerCore.Hubs
             {
                 return;
             }
-            throw new NotImplementedException();
+            usersFromIDs[Context.ConnectionId].CurrentGame.BuildBuildingIfCan(act, usersFromIDs[Context.ConnectionId]);
         }
 
         public async Task Arbitrary(ClientAction act)
@@ -94,8 +94,7 @@ namespace GMRTSServerCore.Hubs
             }
             else if (act is BuildBuildingAction b)
             {
-                throw new NotImplementedException();
-                //await BuildBuilding(b);
+                usersFromIDs[Context.ConnectionId].CurrentGame.BuildBuildingIfCan(b, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
             }
             else if (act is AttackAction at)
             {
