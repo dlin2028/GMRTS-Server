@@ -29,31 +29,34 @@ namespace GMRTSServerCore.Hubs
             await base.OnConnectedAsync();
         }
 
-        public async Task Assist(AssistAction act)
+        public Task Assist(AssistAction act)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
             usersFromIDs[Context.ConnectionId].CurrentGame.AssistIfCan(act, usersFromIDs[Context.ConnectionId]);
+            return Task.CompletedTask;
         }
 
-        public async Task Attack(AttackAction act)
+        public Task Attack(AttackAction act)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
             usersFromIDs[Context.ConnectionId].CurrentGame.AttackIfCan(act, usersFromIDs[Context.ConnectionId]);
+            return Task.CompletedTask;
         }
 
-        public async Task BuildBuilding(BuildBuildingAction act)
+        public Task BuildBuilding(BuildBuildingAction act)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
             usersFromIDs[Context.ConnectionId].CurrentGame.BuildBuildingIfCan(act, usersFromIDs[Context.ConnectionId]);
+            return Task.CompletedTask;
         }
 
         public async Task Arbitrary(ClientAction act)
@@ -80,11 +83,11 @@ namespace GMRTSServerCore.Hubs
             }
         }
 
-        public async Task Replace(ReplaceAction metaAct)
+        public Task Replace(ReplaceAction metaAct)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
             ClientAction act = metaAct.NewAction;
 
@@ -106,59 +109,65 @@ namespace GMRTSServerCore.Hubs
             }
             else
             {
-                throw new Exception();
+                return Task.FromException(new Exception());
             }
+
+            return Task.CompletedTask;
         }
 
-        public async Task Delete(DeleteAction act)
+        public Task Delete(DeleteAction act)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             usersFromIDs[Context.ConnectionId].CurrentGame.DeleteIfCan(act, usersFromIDs[Context.ConnectionId]);
+            return Task.CompletedTask;
         }
 
-        public async Task Move(MoveAction act)
+        public Task Move(MoveAction act)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
             Console.WriteLine($"Enqueued action: Move {act.UnitIDs.First()} from {Context.ConnectionId} to {act.Position}");
             usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act, usersFromIDs[Context.ConnectionId]);
+            return Task.CompletedTask;
         }
 
-        public async Task<bool> FactoryAct(FactoryAction factoryAction)
+        public Task<bool> FactoryAct(FactoryAction factoryAction)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
             if (factoryAction is EnqueueBuildOrder enqueue)
             {
-                return usersFromIDs[Context.ConnectionId].CurrentGame.EnqueueBuildOrder(usersFromIDs[Context.ConnectionId], enqueue);
+                return Task.FromResult(usersFromIDs[Context.ConnectionId].CurrentGame.EnqueueBuildOrder(usersFromIDs[Context.ConnectionId], enqueue));
             }
 
             if (factoryAction is CancelBuildOrder cancel)
             {
-                return usersFromIDs[Context.ConnectionId].CurrentGame.CancelBuildOrder(usersFromIDs[Context.ConnectionId], cancel);
+                return Task.FromResult(usersFromIDs[Context.ConnectionId].CurrentGame.CancelBuildOrder(usersFromIDs[Context.ConnectionId], cancel));
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
-        public async Task ReqStartGame()
+        public Task ReqStartGame()
         {
             User user = usersFromIDs[Context.ConnectionId];
             if (user.CurrentGame == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            user.CurrentGame.StartAt(DateTime.UtcNow + TimeSpan.FromSeconds(2));//.Start();
+            _ = user.CurrentGame.StartAt(DateTime.UtcNow + TimeSpan.FromSeconds(2));//.Start();
+
+            return Task.CompletedTask;
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -167,21 +176,22 @@ namespace GMRTSServerCore.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task<bool> Join(string gameName, string userName)
+        public Task<bool> Join(string gameName, string userName)
         {
             if (!games.ContainsKey(gameName))
             {
-                return false;
+                return Task.FromResult(false);
             }
-            return JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName);
+            return Task.FromResult(JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName));
         }
 
-        public async Task Leave()
+        public Task Leave()
         {
             RemoveUserFromGame(usersFromIDs[Context.ConnectionId]);
+            return Task.CompletedTask;
         }
 
-        public async Task<bool> JoinAndMaybeCreate(string gameName, string userName)
+        public Task<bool> JoinAndMaybeCreate(string gameName, string userName)
         {
             if (!games.ContainsKey(gameName))
             {
@@ -191,9 +201,9 @@ namespace GMRTSServerCore.Hubs
             if (!JoinGame(usersFromIDs[Context.ConnectionId], games[gameName], userName))
             {
                 games.Remove(gameName);
-                return false;
+                return Task.FromResult(false);
             }
-            return true;
+            return Task.FromResult(true);
         }
 
         private bool JoinGame(User user, Game game, string userName)

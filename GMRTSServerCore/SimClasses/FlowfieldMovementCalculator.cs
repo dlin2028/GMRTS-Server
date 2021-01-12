@@ -118,126 +118,130 @@ namespace GMRTSServerCore.SimClasses
 
         static async Task<byte[][]> ComputeFlowField(int x, int y, Map m)
         {
-            float[][] integCosts;
-            // Thread-safe object pool stuff so we aren't constantly allocating these.
-            if (!integCostsObjPool.TryTake(out integCosts))
+            return await Task.Run(() =>
             {
-                integCosts = new float[m.TilesOnSide][];
+                float[][] integCosts;
+                // Thread-safe object pool stuff so we aren't constantly allocating these.
+                if (!integCostsObjPool.TryTake(out integCosts))
+                {
+                    integCosts = new float[m.TilesOnSide][];
+                    for (int i = 0; i < integCosts.Length; i++)
+                    {
+                        integCosts[i] = new float[m.TilesOnSide];
+                    }
+                }
+
+
                 for (int i = 0; i < integCosts.Length; i++)
                 {
-                    integCosts[i] = new float[m.TilesOnSide];
-                }
-            }
-
-
-            for (int i = 0; i < integCosts.Length; i++)
-            {
-                for (int j = 0; j < integCosts[i].Length; j++)
-                {
-                    integCosts[i][j] = float.PositiveInfinity;
-                }
-            }
-
-            // This is based on the code I wrote for the flowfield-experiments branch.
-            // This should probably be implemented more efficiently.
-            integCosts[x][y] = 0;
-            var target = (x, y);
-
-            FancyHeap<(int, int), float> queue = new FancyHeap<(int, int), float>();
-
-
-            // I think this is basically Djikstra's
-            queue.Enqueue(target, 0);
-
-            while (queue.Count > 0)
-            {
-                (int x, int y) current = queue.Dequeue();
-
-                int leftX = current.x > 0 ? current.x - 1 : 0;
-                int topY = current.y > 0 ? current.y - 1 : 0;
-                int rightX = (current.x < m.TilesOnSide - 1) ? (current.x + 1) : (m.TilesOnSide - 1);
-                int bottomY = (current.y < m.TilesOnSide - 1) ? (current.y + 1) : (m.TilesOnSide - 1);
-
-                for (int scanX = leftX; scanX <= rightX; scanX++)
-                {
-                    for (int scanY = topY; scanY <= bottomY; scanY++)
+                    for (int j = 0; j < integCosts[i].Length; j++)
                     {
-                        if ((scanX == current.x && scanY == current.y) || m[scanX, scanY] == ushort.MaxValue)
-                        {
-                            continue;
-                        }
-
-                        float costDelta = m[scanX, scanY];
-                        if (scanX != current.x || scanY != current.y)
-                        {
-                            costDelta *= RadTwo;
-                        }
-
-                        float nextCost = integCosts[current.x][current.y] + costDelta;
-
-                        if (nextCost < integCosts[scanX][scanY])
-                        {
-                            integCosts[scanX][scanY] = nextCost;
-
-                            if (!queue.Contains((scanX, scanY)))
-                            {
-                                queue.Enqueue((scanX, scanY), nextCost);
-                            }
-                        }
+                        integCosts[i][j] = float.PositiveInfinity;
                     }
                 }
 
-            }
+                // This is based on the code I wrote for the flowfield-experiments branch.
+                // This should probably be implemented more efficiently.
+                integCosts[x][y] = 0;
+                var target = (x, y);
+
+                FancyHeap<(int, int), float> queue = new FancyHeap<(int, int), float>();
 
 
-            byte[][] vectorIndices = new byte[m.TilesOnSide][];
+                // I think this is basically Djikstra's
+                queue.Enqueue(target, 0);
 
-            // This bit is copy-pasted from the testing branch, then changed so it compiles
-            // I didn't see a way to make this vastly more efficient
-
-            //Now find the actual flowfields
-
-            for (int x1 = 0; x1 < m.TilesOnSide; x1++)
-            {
-                vectorIndices[x1] = new byte[m.TilesOnSide];
-                for (int y1 = 0; y1 < m.TilesOnSide; y1++)
+                while (queue.Count > 0)
                 {
-                    if (m[(x1, y1)] == ushort.MaxValue)
-                    {
-                        continue;
-                    }
+                    (int x, int y) current = queue.Dequeue();
 
-                    float min = float.PositiveInfinity;
-                    byte minDX = 0;
-                    byte minDY = 0;
+                    int leftX = current.x > 0 ? current.x - 1 : 0;
+                    int topY = current.y > 0 ? current.y - 1 : 0;
+                    int rightX = (current.x < m.TilesOnSide - 1) ? (current.x + 1) : (m.TilesOnSide - 1);
+                    int bottomY = (current.y < m.TilesOnSide - 1) ? (current.y + 1) : (m.TilesOnSide - 1);
 
-                    for (int dx = x1 > 0 ? (-1) : 0, dxMax = x1 < m.TilesOnSide - 1 ? 1 : 0; dx <= dxMax; dx++)
+                    for (int scanX = leftX; scanX <= rightX; scanX++)
                     {
-                        for (int dy = y1 > 0 ? (-1) : 0, dyMax = y1 < m.TilesOnSide - 1 ? 1 : 0; dy <= dyMax; dy++)
+                        for (int scanY = topY; scanY <= bottomY; scanY++)
                         {
-                            if (m[(x1 + dx, y1 + dy)] == ushort.MaxValue)
+                            if ((scanX == current.x && scanY == current.y) || m[scanX, scanY] == ushort.MaxValue)
                             {
                                 continue;
                             }
 
-                            if (integCosts[x1 + dx][y1 + dy] < min)
+                            float costDelta = m[scanX, scanY];
+                            if (scanX != current.x || scanY != current.y)
                             {
-                                min = integCosts[x1 + dx][y1 + dy];
-                                minDX = (byte)dx;
-                                minDY = (byte)dy;
+                                costDelta *= RadTwo;
                             }
 
+                            float nextCost = integCosts[current.x][current.y] + costDelta;
+
+                            if (nextCost < integCosts[scanX][scanY])
+                            {
+                                integCosts[scanX][scanY] = nextCost;
+
+                                if (!queue.Contains((scanX, scanY)))
+                                {
+                                    queue.Enqueue((scanX, scanY), nextCost);
+                                }
+                            }
                         }
                     }
 
-                    vectorIndices[x1][y1] = (byte)(minDX + 3 * minDY + 4);
                 }
-            }
+
+
+                byte[][] vectorIndices = new byte[m.TilesOnSide][];
+
+                // This bit is copy-pasted from the testing branch, then changed so it compiles
+                // I didn't see a way to make this vastly more efficient
+
+                //Now find the actual flowfields
+
+                for (int x1 = 0; x1 < m.TilesOnSide; x1++)
+                {
+                    vectorIndices[x1] = new byte[m.TilesOnSide];
+                    for (int y1 = 0; y1 < m.TilesOnSide; y1++)
+                    {
+                        if (m[(x1, y1)] == ushort.MaxValue)
+                        {
+                            continue;
+                        }
+
+                        float min = float.PositiveInfinity;
+                        byte minDX = 0;
+                        byte minDY = 0;
+
+                        for (int dx = x1 > 0 ? (-1) : 0, dxMax = x1 < m.TilesOnSide - 1 ? 1 : 0; dx <= dxMax; dx++)
+                        {
+                            for (int dy = y1 > 0 ? (-1) : 0, dyMax = y1 < m.TilesOnSide - 1 ? 1 : 0; dy <= dyMax; dy++)
+                            {
+                                if (m[(x1 + dx, y1 + dy)] == ushort.MaxValue)
+                                {
+                                    continue;
+                                }
+
+                                if (integCosts[x1 + dx][y1 + dy] < min)
+                                {
+                                    min = integCosts[x1 + dx][y1 + dy];
+                                    minDX = (byte)dx;
+                                    minDY = (byte)dy;
+                                }
+
+                            }
+                        }
+
+                        vectorIndices[x1][y1] = (byte)(minDX + 3 * minDY + 4);
+                    }
+                }
 
 
 
-            integCostsObjPool.Add(integCosts);
-            return vectorIndices;
+                integCostsObjPool.Add(integCosts);
+
+                return vectorIndices;
+            });
         }
     }
 }
