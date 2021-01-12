@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
@@ -444,7 +445,7 @@ namespace GMRTSServerCore.SimClasses
                     }
                 }
             }
-            UpdateLoop();//.Start();
+            _ = UpdateLoop().ContinueWith(t => ExceptionDispatchInfo.Capture(t.Exception.GetBaseException()).Throw(), TaskContinuationOptions.OnlyOnFaulted);//.Start();
         }
 
         private async Task UpdateLoop()
