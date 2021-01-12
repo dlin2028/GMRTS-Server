@@ -98,15 +98,64 @@ namespace GMRTSClasses
         {
             await connection.InvokeAsync("Replace", action);
         }
-        
+
+        public async Task ArbitraryMeta(MetaAction action)
+        {
+            switch (action)
+            {
+                case ReplaceAction replace:
+                    await ReplaceAction(replace);
+                    break;
+                case DeleteAction delete:
+                    await DeleteAction(delete);
+                    break;
+                default:
+                    throw new Exception();
+            }
+        }
+
         public async Task ArbitraryNonmeta(ClientAction action)
         {
-            await connection.InvokeAsync("Arbitrary", action);
+            switch (action)
+            {
+                case MoveAction mv:
+                    await MoveAction(mv);
+                    break;
+                case AssistAction assist:
+                    await AssistAction(assist);
+                    break;
+                case AttackAction attack:
+                    await AttackAction(attack);
+                    break;
+                case BuildBuildingAction build:
+                    await BuildFactoryAction(build);
+                    break;
+                default:
+                    throw new Exception();
+            }
         }
 
         public async Task<bool> FactoryAct(FactoryAction action)
         {
-            return await connection.InvokeAsync<bool>("FactoryAct", action);
+            switch (action)
+            {
+                case EnqueueBuildOrder enq:
+                    return await EnqueueFactoryOrder(enq);
+                case CancelBuildOrder cancel:
+                    return await CancelFactoryOrder(cancel);
+                default:
+                    throw new Exception();
+            }
+        }
+
+        public async Task<bool> EnqueueFactoryOrder(EnqueueBuildOrder order)
+        {
+            return await connection.InvokeAsync<bool>("FactoryEnqueue", order);
+        }
+
+        public async Task<bool> CancelFactoryOrder(CancelBuildOrder order)
+        {
+            return await connection.InvokeAsync<bool>("FactoryCancel", order);
         }
 
         public async Task<bool> TryStart()
@@ -119,7 +168,7 @@ namespace GMRTSClasses
         public void UpdateHeartbeatTimer(TimeSpan elapsedTime)
         {
             timeSinceHeartbeat += elapsedTime;
-            if(timeSinceHeartbeat > heartbeatTimeout)
+            if (timeSinceHeartbeat > heartbeatTimeout)
             {
                 OnHeartbeatDeath?.Invoke();
             }
