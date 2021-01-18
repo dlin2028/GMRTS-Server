@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace GMRTSClasses.CTSTransferData.MetaActions
 {
-    public class ReplaceAction : MetaAction
+    public class ReplaceAction<T> : MetaAction where T : ClientAction
     {
-        public ClientAction NewAction { get; set; }
+        public T NewAction { get; set; }
     }
 }

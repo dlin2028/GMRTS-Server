@@ -94,16 +94,25 @@ namespace GMRTSClasses
             await connection.InvokeAsync("Delete", action);
         }
 
-        public async Task ReplaceAction(ReplaceAction action)
+        public async Task ReplaceAction<T>(ReplaceAction<T> action) where T : ClientAction
         {
-            await connection.InvokeAsync("Replace", action);
+            await connection.InvokeAsync("Replace" + typeof(T).Name, action);
         }
 
         public async Task ArbitraryMeta(MetaAction action)
         {
             switch (action)
             {
-                case ReplaceAction replace:
+                case ReplaceAction<MoveAction> replace:
+                    await ReplaceAction(replace);
+                    break;
+                case ReplaceAction<BuildBuildingAction> replace:
+                    await ReplaceAction(replace);
+                    break;
+                case ReplaceAction<AttackAction> replace:
+                    await ReplaceAction(replace);
+                    break;
+                case ReplaceAction<AssistAction> replace:
                     await ReplaceAction(replace);
                     break;
                 case DeleteAction delete:
