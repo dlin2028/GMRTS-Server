@@ -59,34 +59,50 @@ namespace GMRTSServerCore.Hubs
             return Task.CompletedTask;
         }
 
-        public Task Replace(ReplaceAction metaAct)
+        public Task ReplaceMoveAction(ReplaceAction<MoveAction> act)
         {
             if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
                 return Task.CompletedTask;
             }
-            ClientAction act = metaAct.NewAction;
 
-            if (act is MoveAction m)
+            usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(act.NewAction, usersFromIDs[Context.ConnectionId], act.TargetActionID);
+
+            return Task.CompletedTask;
+        }
+
+        public Task ReplaceBuildBuildingAction(ReplaceAction<BuildBuildingAction> act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                usersFromIDs[Context.ConnectionId].CurrentGame.MoveIfCan(m, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
+                return Task.CompletedTask;
             }
-            else if (act is BuildBuildingAction b)
+
+            usersFromIDs[Context.ConnectionId].CurrentGame.BuildBuildingIfCan(act.NewAction, usersFromIDs[Context.ConnectionId], act.TargetActionID);
+
+            return Task.CompletedTask;
+        }
+
+        public Task ReplaceAttackAction(ReplaceAction<AttackAction> act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                usersFromIDs[Context.ConnectionId].CurrentGame.BuildBuildingIfCan(b, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
+                return Task.CompletedTask;
             }
-            else if (act is AttackAction at)
+
+            usersFromIDs[Context.ConnectionId].CurrentGame.AttackIfCan(act.NewAction, usersFromIDs[Context.ConnectionId], act.TargetActionID);
+
+            return Task.CompletedTask;
+        }
+
+        public Task ReplaceAssistAction(ReplaceAction<AssistAction> act)
+        {
+            if (usersFromIDs[Context.ConnectionId].CurrentGame == null)
             {
-                usersFromIDs[Context.ConnectionId].CurrentGame.AttackIfCan(at, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
+                return Task.CompletedTask;
             }
-            else if (act is AssistAction @as)
-            {
-                usersFromIDs[Context.ConnectionId].CurrentGame.AssistIfCan(@as, usersFromIDs[Context.ConnectionId], metaAct.TargetActionID);
-            }
-            else
-            {
-                return Task.FromException(new Exception());
-            }
+
+            usersFromIDs[Context.ConnectionId].CurrentGame.AssistIfCan(act.NewAction, usersFromIDs[Context.ConnectionId], act.TargetActionID);
 
             return Task.CompletedTask;
         }
