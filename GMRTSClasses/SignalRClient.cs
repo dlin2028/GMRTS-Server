@@ -19,12 +19,14 @@ using System.Threading.Tasks;
 
 namespace GMRTSClasses
 {
-    public class SignalRClient
+    public class SignalRClient : IAsyncDisposable
     {
         private HubConnection connection;
         private Func<Guid, Unit> getUnit;
         private TimeSpan timeSinceHeartbeat;
         private TimeSpan heartbeatTimeout;
+
+        private List<IDisposable> disposables;
 
         public event Action OnHeartbeatDeath = null;
 
@@ -36,17 +38,33 @@ namespace GMRTSClasses
             this.heartbeatTimeout = heartbeatTimeout;
             OnHeartbeat += Beat;
 
-            //These are IDisposable. I should probably make this class IDisposable, too, so it can dispose of them.
-            connection.On("HeartbeatFromServer", OnHeartbeat);
-            connection.On<Guid, ChangingData<Vector2>>("UpdatePosition", PosUpdate);
-            connection.On<Guid, ChangingData<float>>("UpdateHealth", HealthUpdate);
-            connection.On<Guid, ChangingData<float>>("UpdateRotation", RotationUpdate);
-            connection.On<Guid>("KillUnit", KillUnit);
-            connection.On<UnitSpawnData>("AddUnit", AddUnit);
-            connection.On<DateTime>("GameStarted", GameStart);
-            connection.On<ActionOver>("ActionOver", ActionDone);
-            connection.On<OrderCompleted>("OrderFinished", OrderFinished);
-            connection.On<ResourceUpdate>("ResourceUpdated", ResourceUpdated);
+            disposables = new List<IDisposable>();
+
+            disposables.Add(connection.On("HeartbeatFromServer", OnHeartbeat));
+            disposables.Add(connection.On<Guid, ChangingData<Vector2>>("UpdatePosition", PosUpdate));
+            disposables.Add(connection.On<Guid, ChangingData<float>>("UpdateHealth", HealthUpdate));
+            disposables.Add(connection.On<Guid, ChangingData<float>>("UpdateRotation", RotationUpdate));
+            disposables.Add(connection.On<Guid>("KillUnit", KillUnit));
+            disposables.Add(connection.On<UnitSpawnData>("AddUnit", AddUnit));
+            disposables.Add(connection.On<DateTime>("GameStarted", GameStart));
+            disposables.Add(connection.On<ActionOver>("ActionOver", ActionDone));
+            disposables.Add(connection.On<OrderCompleted>("OrderFinished", OrderFinished));
+            disposables.Add(connection.On<ResourceUpdate>("ResourceUpdated", ResourceUpdated));
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            foreach(IDisposable disposable in disposables)
+            {
+                disposable?.Dispose();
+            }
+            disposables.Clear();
+
+            if (connection != null)
+            {
+                await connection.DisposeAsync();
+                connection = null;
+            }
         }
 
         public async Task<bool> JoinGameByName(string gameName, string userName)
