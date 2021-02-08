@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses.ServersideUnits
 {
+    /// <summary>
+    /// Represents markets.
+    /// </summary>
     internal class Supermarket : Building
     {
         public const float MoneyPerSecond = 10f;
@@ -13,6 +16,11 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         {
         }
 
+        /// <summary>
+        /// Earns a little bit of money for its owner.
+        /// </summary>
+        /// <param name="currentMilliseconds"></param>
+        /// <param name="elapsedTime"></param>
         public override void Update(ulong currentMilliseconds, float elapsedTime)
         {
             Owner.Money += MoneyPerSecond * elapsedTime;

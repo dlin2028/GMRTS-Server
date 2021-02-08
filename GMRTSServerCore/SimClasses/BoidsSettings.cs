@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Literally just stores boids settings.
+    /// Anything you could wanna tune.
+    /// </summary>
     public struct BoidsSettings
     {
         public readonly float CohesionMaxMag;

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses.UnitStates
 {
+    /// <summary>
+    /// Just for idling.
+    /// </summary>
     internal class IdleOrder : IUnitOrder
     {
         public Guid ID { get; set; }
@@ -17,6 +20,12 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         static Vector2 InfInf = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
         public Unit Unit;
 
+        /// <summary>
+        /// Literally just idle. That's it. Oh and boids too.
+        /// </summary>
+        /// <param name="currentMilliseconds"></param>
+        /// <param name="elapsedTime"></param>
+        /// <returns></returns>
         public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)
         {
             Vector2 velocity = Unit.Game.movementCalculator.ComputeVelocity(Unit.Game, Unit);
@@ -33,6 +42,9 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             return ContOrStop.Continue;
         }
 
+        /// <summary>
+        /// Jesucristo there are so many better ways of doing this.
+        /// </summary>
         internal void NoLongerIdle()
         {
             LastVel = InfInf;

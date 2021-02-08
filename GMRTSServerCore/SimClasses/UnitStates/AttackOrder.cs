@@ -14,6 +14,9 @@ namespace GMRTSServerCore.SimClasses.UnitStates
     {
         public Guid ID { get; set; }
 
+        /// <summary>
+        /// Outsource movement math.
+        /// </summary>
         private IMovementCalculator movementCalculator;
 
         private Vector2 lastVel = new Vector2(0, 0);
@@ -21,10 +24,17 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         public Unit Attacker;
         public Unit Target;
 
+        /// <summary>
+        /// Move the attacker towards the target and attack if appropriate.
+        /// </summary>
+        /// <param name="currentMilliseconds"></param>
+        /// <param name="elapsedTime"></param>
+        /// <returns></returns>
         public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)
         {
             Vector2 velocity = Vector2.Zero;
 
+            // Arbitrary, hardcoded, yada yada, you know the drill.
             if ((Attacker.Position - Target.Position).LengthSquared() > 2500)
             {
                 velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker, Target.Position);
@@ -41,12 +51,14 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 // Pew pew! Pew pew!
                 Attacker.TryShoot(Target);
 
+                // Mission accomplished. Next target, soldier!
                 if (Target.Health <= 0)
                 {
                     return ContOrStop.Stop;
                 }
             }
 
+            // Do I even need to say it?
             if ((velocity - lastVel).LengthSquared() >= 0.001)
             {
                 lastVel = velocity;

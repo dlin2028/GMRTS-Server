@@ -11,20 +11,42 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Currently the only implementation of this interface.
+    /// </summary>
     class FlowfieldMovementCalculator : IMovementCalculator
     {
         private static Vector2[] flowfieldVels = new Vector2[] { new Vector2(-0.707f, -0.707f), new Vector2(0, -1), new Vector2(0.707f, -0.707f), new Vector2(-1, 0), new Vector2(0, 0), new Vector2(1, 0), new Vector2(-0.707f, 0.707f), new Vector2(0, 1), new Vector2(0.707f, 0.707f) };
 
+        /// <summary>
+        /// Look at me being fancy. I don't even know if this has to be a ConcurrentBag, but whatevs.
+        /// </summary>
         static ConcurrentBag<float[][]> integCostsObjPool = new ConcurrentBag<float[][]>();
 
+        /// <summary>
+        /// Lmao the one thing it would probably be okay to hardcode.
+        /// Also this should be a const at least but whatever.
+        /// </summary>
         static float RadTwo = 1.414213562373f;
 
-        
+        /// <summary>
+        /// Nonpathfinding computation.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <param name="unit"></param>
+        /// <returns></returns>
         public Vector2 ComputeVelocity(Game game, Unit unit)
         {
+            // When in doubt, MaxMagnitude
             return MaxMagnitude(GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength, unit.BoidsSettings.MaximumBoidsVelocity);
         }
 
+        /// <summary>
+        /// Clamps the magnitude. What were you expecting?
+        /// </summary>
+        /// <param name="vec"></param>
+        /// <param name="maxMag"></param>
+        /// <returns></returns>
         static Vector2 MaxMagnitude(Vector2 vec, float maxMag)
         {
             if (vec.LengthSquared() <= maxMag * maxMag)
@@ -35,6 +57,12 @@ namespace GMRTSServerCore.SimClasses
             return Vector2.Normalize(vec) * maxMag;
         }
 
+        /// <summary>
+        /// Boids calculation.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <param name="unit"></param>
+        /// <returns></returns>
         public Vector2 GetBoidsVelocity(Game game, Unit unit)
         {
             (int x, int y) = IMovementCalculator.fromVec2(unit.Position, game.Map.TileSize);
@@ -73,17 +101,26 @@ namespace GMRTSServerCore.SimClasses
 
             if (sepCount > 0)
             {
+                // When in doubt, MaxMagnitude.
                 totalVelocity += MaxMagnitude(separationVelocity, unit.VelocityMagnitude);// / sepCount;
             }
 
             if (neighborCount > 0)
             {
+                // When in doubt, MaxMagnitude.
                 totalVelocity += MaxMagnitude((avgPos / neighborCount - unit.Position) * unit.BoidsSettings.CohesionStrength, unit.BoidsSettings.CohesionMaxMag);
             }
 
             return totalVelocity;
         }
 
+        /// <summary>
+        /// Pathfinding calculation.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <param name="unit"></param>
+        /// <param name="destination"></param>
+        /// <returns></returns>
         public Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination)
         {
             Vector2 flowfieldVel;
@@ -95,6 +132,10 @@ namespace GMRTSServerCore.SimClasses
                     game.Flowfields[tile] = ComputeFlowField(tile.x, tile.y, game.Map);
                     flowfieldVel = Vector2.Zero;
                 }
+                
+                // Ooooh, Tasks, look at me. Maybe I even used them right. (This was before I started doing research for my async presentation.)
+                // This is basically for if it is still calculating, we want the unit to idle.
+                // It's better than freezing the game.
                 else if (!game.Flowfields[tile].IsCompleted)
                 {
                     flowfieldVel = Vector2.Zero;
@@ -110,12 +151,14 @@ namespace GMRTSServerCore.SimClasses
             flowfieldVel *= unit.BoidsSettings.FlowfieldStrength;
 
             // Boids, I think
+            // When in doubt, MaxMagnitude
             Vector2 boidsVel = MaxMagnitude(GetBoidsVelocity(game, unit) * unit.BoidsSettings.BoidsStrength, unit.BoidsSettings.MaximumBoidsVelocity);
 
 
             return MaxMagnitude(flowfieldVel + boidsVel, unit.VelocityMagnitude);
         }
 
+        // Should probably not be marked async. No need to wrap one state machine in another.
         static async Task<byte[][]> ComputeFlowField(int x, int y, Map m)
         {
             return await Task.Run(() =>
