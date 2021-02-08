@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Represents orders for factories to build a unit.
+    /// </summary>
     internal class UnitConstructionOrder
     {
         internal MobileUnitType UnitType;

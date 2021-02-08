@@ -7,19 +7,43 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Represents a game map.
+    /// </summary>
     class Map
     {
+        /// <summary>
+        /// The costs of each tile. Only stores non-default (non-1) values, leaving an absence of a value to indicate default (1).
+        /// </summary>
         private Dictionary<(int x, int y), ushort> Costs = new Dictionary<(int x, int y), ushort>();
 
+        /// <summary>
+        /// The size of a tile.
+        /// </summary>
         public int TileSize = 10;
+
+        /// <summary>
+        /// Width (and height, the maps are square) of the map in tiles.
+        /// </summary>
         public int TilesOnSide = 80;
 
+        /// <summary>
+        /// I'm too lazy to use a consistent notation when using the indexer.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public ushort this[int x, int y]
         {
             get => this[(x, y)];
             set => this[(x, y)] = value;
         }
 
+        /// <summary>
+        /// Lets us treat the map as a contiguous 2d array of costs, even though it's not.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public ushort this[(int x, int y) b]
         {
             get
@@ -33,6 +57,7 @@ namespace GMRTSServerCore.SimClasses
             }
             set
             {
+                // Ensures we store no default costs in the dictionary.
                 if (value == 1)
                 {
                     Costs.Remove(b);
@@ -49,6 +74,11 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Lets me draw a map in MS Paint.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         internal static Map FromImageFile(string filename)
         {
             Bitmap bmp = new Bitmap(filename);

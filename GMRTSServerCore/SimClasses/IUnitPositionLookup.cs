@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Defines things that provide ways to search for units by area.
+    /// </summary>
     internal interface IUnitPositionLookup
     {
         void Update(Unit unit, Vector2 newPosition);

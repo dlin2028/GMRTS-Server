@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Represents users/players/whatever you wanna call them
+    /// </summary>
     internal class User
     {
         public string ID { get; set; }

@@ -23,22 +23,48 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// The actual game.
+    /// </summary>
     internal class Game
     {
+        /// <summary>
+        /// All the users in the game.
+        /// </summary>
         private List<User> Users { get; set; } = new List<User>();
 
+        /// <summary>
+        /// Pretty sure we don't need this.
+        /// </summary>
         internal object FlowfieldLocker = new object();
 
+        /// <summary>
+        /// Yay flowfields. The flowfields computed by the FlowfieldMovementCalculator.
+        /// </summary>
         internal Dictionary<(int x, int y), Task<byte[][]>> Flowfields = new Dictionary<(int x, int y), Task<byte[][]>>();
 
+        /// <summary>
+        /// The movement calculator. Yay for modularization!
+        /// </summary>
         internal IMovementCalculator movementCalculator;
 
+        /// <summary>
+        /// A tool for looking up units by area. For faster neighbor checking.
+        /// </summary>
         internal IUnitPositionLookup unitPositionLookup;
 
+        /// <summary>
+        /// The map the game is taking place on. We use this for pathfinding.
+        /// </summary>
         internal Map Map;
 
         object locker = new object();
 
+        /// <summary>
+        /// Adds users and gives them their starting units.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public bool AddUser(User user)
         {
             if (Users.Any(a => a.CurrentUsername == user.CurrentUsername))
@@ -57,6 +83,10 @@ namespace GMRTSServerCore.SimClasses
             return true;
         }
 
+        /// <summary>
+        /// Removes a user.
+        /// </summary>
+        /// <param name="user"></param>
         public void RemoveUser(User user)
         {
             Users.Remove(user);
@@ -70,6 +100,11 @@ namespace GMRTSServerCore.SimClasses
             unitPositionLookup = new GridUnitPositionLookup(this);
         }
 
+        /// <summary>
+        /// This is called by units when their position updates and it just calls the update on the actual lookup object.
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <param name="newPos"></param>
         internal void UpdateUnitLookup(Unit unit, Vector2 newPos)
         {
             unitPositionLookup.Update(unit, newPos);
@@ -98,6 +133,12 @@ namespace GMRTSServerCore.SimClasses
             Units.Remove(unit.ID);
         }
 
+        /// <summary>
+        /// Gets the units from the list of IDs that are owned by the specified user and exist.
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public List<Unit> GetValidUnits(List<Guid> ids, User user)
         {
             List<Unit> units = new List<Unit>(ids.Count);
@@ -120,6 +161,12 @@ namespace GMRTSServerCore.SimClasses
             return units;
         }
 
+        /// <summary>
+        /// Creates a building, schedules its information to be sent to the user at the next update, and removes the cost of it from the user's resources.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="buildingType"></param>
+        /// <param name="position"></param>
         internal void SpawnBuildingAndChargeUser(User user, BuildingType buildingType, Vector2 position)
         {
             user.Money -= Prices.BuildingPriceData[buildingType].RequiredMoney;
@@ -139,6 +186,12 @@ namespace GMRTSServerCore.SimClasses
             ToSpawn.Add(building);
         }
 
+        /// <summary>
+        /// Finds linked list nodes for orders to be replaced or deleted.
+        /// </summary>
+        /// <param name="units"></param>
+        /// <param name="actionToReplace"></param>
+        /// <returns></returns>
         private static List<(LinkedListNode<IUnitOrder>, Unit)> GetOrderNodesToReplace(List<Unit> units, Guid actionToReplace)
         {
             List<(LinkedListNode<IUnitOrder>, Unit)> linkedListNodes = new List<(LinkedListNode<IUnitOrder>, Unit)>(units.Count);
@@ -166,12 +219,22 @@ namespace GMRTSServerCore.SimClasses
             return linkedListNodes;
         }
 
+        /// <summary>
+        /// Replaces one node with another order.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="newOrder"></param>
         private static void ReplaceNode(LinkedListNode<IUnitOrder> node, IUnitOrder newOrder)
         {
             node.List.AddAfter(node, newOrder);
             node.List.Remove(node);
         }
 
+        /// <summary>
+        /// Deletes.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
         public void DeleteIfCan(DeleteAction action, User user)
         {
             lock (locker)
@@ -185,6 +248,11 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Adds move order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
         public void MoveIfCan(MoveAction action, User user)
         {
             lock (locker)
@@ -197,6 +265,12 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Replaces an order with a move order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
+        /// <param name="actionToReplace"></param>
         public void MoveIfCan(MoveAction action, User user, Guid actionToReplace)
         {
             lock (locker)
@@ -210,6 +284,11 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Adds Assist order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
         public void AssistIfCan(AssistAction action, User user)
         {
             lock (locker)
@@ -234,6 +313,12 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Replaces an order with an assist order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
+        /// <param name="actionToReplace"></param>
         public void AssistIfCan(AssistAction action, User user, Guid actionToReplace)
         {
             lock (locker)
@@ -259,7 +344,11 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
-
+        /// <summary>
+        /// Adds Attack order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
         public void AttackIfCan(AttackAction action, User user)
         {
             lock (locker)
@@ -284,6 +373,11 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Adds BuildBuilding order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
         public void BuildBuildingIfCan(BuildBuildingAction action, User user)
         {
             lock (locker)
@@ -308,6 +402,12 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Replaces an order with a BuildBuilding order.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
+        /// <param name="actionToReplace"></param>
         public void BuildBuildingIfCan(BuildBuildingAction action, User user, Guid actionToReplace)
         {
             lock (locker)
@@ -333,6 +433,12 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Enqueues a construction order at a factory.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="enq"></param>
+        /// <returns></returns>
         public bool EnqueueBuildOrder(User user, EnqueueBuildOrder enq)
         {
             if (!Units.ContainsKey(enq.TargetFactory))
@@ -370,6 +476,12 @@ namespace GMRTSServerCore.SimClasses
             return true;
         }
 
+        /// <summary>
+        /// Creates a unit and schedules its spawn information to be sent to clients next update.
+        /// </summary>
+        /// <param name="unitType"></param>
+        /// <param name="position"></param>
+        /// <param name="owner"></param>
         internal void SpawnUnit(GMRTSClasses.Units.MobileUnitType unitType, Vector2 position, User owner)
         {
             Unit unit;
@@ -394,11 +506,23 @@ namespace GMRTSServerCore.SimClasses
             ToSpawn.Add(unit);
         }
 
+        /// <summary>
+        /// Schedules information to be sent to clients next update regarding the completion of a factory order.
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="factoryID"></param>
+        /// <param name="orderID"></param>
         internal void TellOwnerOrderFinished(User owner, Guid factoryID, Guid orderID)
         {
             OrderCompletedsToSend.Add((owner, new OrderCompleted() { FactoryID = factoryID, OrderID = orderID }));
         }
 
+        /// <summary>
+        /// Cancels a factory construction order.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
         public bool CancelBuildOrder(User user, CancelBuildOrder cancel)
         {
             if (!Units.ContainsKey(cancel.TargetFactory))
@@ -435,6 +559,12 @@ namespace GMRTSServerCore.SimClasses
             return true;
         }
 
+        /// <summary>
+        /// Replaces an order with an attack order. I have NO idea why this isn't with the others.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="user"></param>
+        /// <param name="actionToReplace"></param>
         public void AttackIfCan(AttackAction action, User user, Guid actionToReplace)
         {
             lock (locker)
@@ -460,11 +590,21 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Schedules information about the completion of an order to be sent next update.
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <param name="actionID"></param>
         public void QueueActionOver(Unit unit, Guid actionID)
         {
             ActionOversToSend.Add((unit, actionID));
         }
 
+        /// <summary>
+        /// Schedules the start of the game.
+        /// </summary>
+        /// <param name="utcStart"></param>
+        /// <returns></returns>
         public async Task StartAt(DateTime utcStart)
         {
             TimeSpan wait = utcStart - DateTime.UtcNow;
@@ -472,6 +612,10 @@ namespace GMRTSServerCore.SimClasses
             await Start();
         }
 
+        /// <summary>
+        /// Starts the game and sends relevant information to clients.
+        /// </summary>
+        /// <returns></returns>
         public async Task Start()
         {
             if (Stopwatch.IsRunning)
@@ -497,6 +641,10 @@ namespace GMRTSServerCore.SimClasses
             _ = UpdateLoop().ContinueWith(t => ExceptionDispatchInfo.Capture(t.Exception.GetBaseException()).Throw(), TaskContinuationOptions.OnlyOnFaulted);//.Start();
         }
 
+        /// <summary>
+        /// Main update loop. It handles timing and calls UpdateBody.
+        /// </summary>
+        /// <returns></returns>
         private async Task UpdateLoop()
         {
             while (true)
@@ -513,8 +661,15 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
+        /// <summary>
+        /// Main update logic.
+        /// </summary>
+        /// <param name="currentMillis"></param>
+        /// <param name="elapsedTime"></param>
+        /// <returns></returns>
         private async Task UpdateBody(ulong currentMillis, float elapsedTime)
         {
+            // Updates all the units. Don't really know if we need this lock, but evidently at some point I thought we might. Better safe than sorry.
             lock (locker)
             {
                 foreach (Unit unit in Units.Values)
@@ -523,16 +678,19 @@ namespace GMRTSServerCore.SimClasses
                 }
             }
 
+            // Sends information about the completed orders.
             foreach ((Unit unit, Guid actionID) in ActionOversToSend)
             {
                 await Context.Clients.Client(unit.Owner.ID).SendAsync("ActionOver", new ActionOver() { ActionID = actionID, Units = new List<Guid>() { unit.ID } });
             }
 
+            // Sends information about the completed orders -- the other kind of order.
             foreach ((User user, OrderCompleted comp) in OrderCompletedsToSend)
             {
                 await Context.Clients.Client(user.ID).SendAsync("OrderFinished", comp);
             }
 
+            // Sends unit spawn information.
             foreach (Unit unit in ToSpawn)
             {
                 Units.Add(unit.ID, unit);
@@ -544,17 +702,20 @@ namespace GMRTSServerCore.SimClasses
                 }
             }
 
+            // Clears the lists we just went through.
             ToSpawn.Clear();
 
             ActionOversToSend.Clear();
             OrderCompletedsToSend.Clear();
 
+            // Updates the users on their resources. This is temporary! In the future, it should only send it when something uses a resource or when the rate of production changes.
             foreach (User user in Users)
             {
                 await Context.Clients.Client(user.ID).SendAsync("ResourceUpdated", new ResourceUpdate() { ResourceType = ResourceType.Mineral, Value = new GMRTSClasses.Changing<float>(user.Mineral, 0, GMRTSClasses.FloatChanger.FChanger, currentMillis) });
                 await Context.Clients.Client(user.ID).SendAsync("ResourceUpdated", new ResourceUpdate() { ResourceType = ResourceType.Money, Value = new GMRTSClasses.Changing<float>(user.Money, 0, GMRTSClasses.FloatChanger.FChanger, currentMillis) });
             }
 
+            // Code does not require inspection. Move along, move along.
             List<Guid> toKill = new List<Guid>();
             foreach (Unit unit in Units.Values)
             {
@@ -612,7 +773,13 @@ namespace GMRTSServerCore.SimClasses
             }
         }
 
-        //If this function turns out to be a performance bottleneck, let me (Peter) know. I have a plan involving breaking the map into grid squares.
+        /// <summary>
+        /// Gets the users that can see a unit, ignoring things like mountains that obstruct vision.
+        /// Might end up being a performance bottleneck. If it is, switch to using the UnitPositionLookup thing.
+        /// The only reason it doesn't already use that is because this was written before that existed.
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <returns></returns>
         private IReadOnlyList<string> GetRelevantUserIDs(Unit unit)
         {
             List<string> users = new List<string>(Users.Count);

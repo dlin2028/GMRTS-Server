@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace GMRTSServerCore.SimClasses
 {
+    /// <summary>
+    /// Defines things that provide movement calculations.
+    /// </summary>
     interface IMovementCalculator
     {
         Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination);
