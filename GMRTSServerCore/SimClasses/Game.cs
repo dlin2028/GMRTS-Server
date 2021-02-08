@@ -716,11 +716,16 @@ namespace GMRTSServerCore.SimClasses
             }
 
             // Code does not require inspection. Move along, move along.
+
+            // This bit basically figures out which clients need to be informed of the unit's status and then tells them about it.
             List<Guid> toKill = new List<Guid>();
             foreach (Unit unit in Units.Values)
             {
                 IReadOnlyList<string> userIDsToUpdate = GetRelevantUserIDs(unit);
                 IReadOnlyList<string> oldUserIDsToUpdate = unit.LastFrameVisibleUsers;
+
+                // The differences between the sets of this update's visible users and last update's visible users tells us who
+                // has to be read in and who should be told that the unit is now invisible to them.
                 string[] newlyCanSee = userIDsToUpdate.Except(oldUserIDsToUpdate).ToArray();
                 string[] newlyCantSee = oldUserIDsToUpdate.Except(userIDsToUpdate).ToArray();
                 var clients = Context.Clients.Clients(userIDsToUpdate);
@@ -728,6 +733,8 @@ namespace GMRTSServerCore.SimClasses
                 var newlyCantSeeClients = Context.Clients.Clients(newlyCantSee);
                 unit.LastFrameVisibleUsers = userIDsToUpdate.ToArray();
 
+                // Code that updates the health is, in the current system, responsible for figuring out if the change is sufficient to warrant a new message being sent out.
+                // Not a great system, but it seems to work.
                 if (unit.UpdateHealth)
                 {
                     unit.UpdateHealth = false;
@@ -738,12 +745,14 @@ namespace GMRTSServerCore.SimClasses
                     await newlyCanSeeClients.SendAsync("UpdateHealth", unit.ID, unit.HealthUpdate);
                 }
 
+                // Register units for killifying
                 if (unit.Health <= 0)
                 {
                     await clients.SendAsync("KillUnit", unit.ID);
                     toKill.Add(unit.ID);
                 }
 
+                // Again, code that changes position/velocity should, in this system, tell us whether or not to inform the clients
                 if (unit.UpdatePosition)
                 {
                     unit.UpdatePosition = false;
@@ -754,6 +763,7 @@ namespace GMRTSServerCore.SimClasses
                     await newlyCanSeeClients.SendAsync("UpdatePosition", unit.ID, unit.PositionUpdate);
                 }
 
+                // Again, same for rotation
                 if (unit.UpdateRotation)
                 {
                     unit.UpdateRotation = false;
@@ -764,9 +774,13 @@ namespace GMRTSServerCore.SimClasses
                     await newlyCanSeeClients.SendAsync("UpdateRotation", unit.ID, unit.RotationUpdate);
                 }
 
+
+                // A really lazy (and originally temporary) way to make units visible when they are out of one's view
+                // This really should be replaced by a separate IsVisible boolean, but whatever
                 await newlyCantSeeClients.SendAsync("UpdatePosition", unit.ID, new ChangingData<Vector2>(0, new Vector2(-200, -200), new Vector2(0, 0)));
             }
 
+            // Kill the units scheduled for killification
             foreach (Guid id in toKill)
             {
                 Remove(Units[id]);
