@@ -21,9 +21,6 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public override bool TryShoot(Unit target)
-        {
-            return false;
-        }
+        public override void Shoot(Unit target) { }
     }
 }

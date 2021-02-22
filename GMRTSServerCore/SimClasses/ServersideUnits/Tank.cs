@@ -43,30 +43,14 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         /// <summary>
         /// Still a WIP system but at least tanks can theoretically shoot.
-        /// Checks simple radius and cooldown.
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public override bool TryShoot(Unit target)
+        public override void Shoot(Unit target)
         {
-            if ((target.Position - Position).LengthSquared() > rangeSquared)
-            {
-                return false;
-            }
-
-            DateTime now = DateTime.Now;
-            if (now - lastShot < coolDown)
-            {
-                return false;
-            }
-
-            lastShot = now;
-
             target.Health -= dmg;
             target.HealthUpdate = new GMRTSClasses.STCTransferData.ChangingData<float>(currentMillis, target.Health, 0);
             target.UpdateHealth = true;
-
-            return true;
         }
     }
 }

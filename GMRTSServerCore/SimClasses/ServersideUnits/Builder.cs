@@ -17,13 +17,10 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         }
 
         /// <summary>
-        /// Very WIP system. Builders cannot shoot, so this always returns false.
+        /// Very WIP system. Builders cannot shoot, so this always just returns.
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public override bool TryShoot(Unit target)
-        {
-            return false;
-        }
+        public override void Shoot(Unit target) { }
     }
 }

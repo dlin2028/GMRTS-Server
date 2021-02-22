@@ -58,7 +58,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// </summary>
         public float VelocityMagnitude = 20f;
 
-        public abstract bool TryShoot(Unit target);
+        public abstract void Shoot(Unit target);
 
         /// <summary>
         /// We want a reference to our game.
@@ -81,6 +81,17 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// <param name="elapsedTime"></param>
         public virtual void Update(ulong currentMilliseconds, float elapsedTime)
         {
+            VisibilityChecker.Update();
+            CombatTargetTracker.Update();
+            if (CombatSettings.CanShoot && CombatTargetTracker.Target != null)
+            {
+                if (currentMilliseconds >= LastShotTime + CombatSettings.ShotCooldown.TotalMilliseconds)
+                {
+                    LastShotTime = currentMilliseconds;
+                    Shoot(CombatTargetTracker.Target);
+                }
+            }
+
             // If we have no orders, idle.
             if (Orders.Count == 0)
             {
@@ -129,6 +140,11 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         public ChangingData<float> RotationUpdate { get; set; }
         public bool UpdateRotation { get; set; } = false;
 
+        public bool IsDead = false;
+
+        public IVisibilityChecker VisibilityChecker;
+        public ICombatTargetTracker CombatTargetTracker;
+
         /// <summary>
         /// There are many occassions where we want to be able to know a unit's owner.
         /// Like, all the time.
@@ -142,6 +158,10 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             this.Owner = owner;
             this.Game = game;
             IdleOrder = new IdleOrder(this);
+
+            // Bad ugly *bonk*
+            VisibilityChecker = new EuclideanDistanceLineOfSightChecker(this);
+            CombatTargetTracker = new StandardCombatTargetTracker(this, VisibilityChecker, game.unitPositionLookup);
         }
 
         /// <summary>
@@ -155,5 +175,11 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
                                                                boidsStrength:           20f,
                                                                flowfieldStrength:       80f,
                                                                maximumBoidsVelocity:    70f);
+
+        public CombatSettings CombatSettings = new CombatSettings(canShoot:             true,
+                                                                  shotCooldown:         TimeSpan.FromSeconds(3),
+                                                                  visionDistance:       60);
+
+        public ulong LastShotTime { get; private set; }
     }
 }

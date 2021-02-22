@@ -717,6 +717,7 @@ namespace GMRTSServerCore.SimClasses
                 {
                     await clients.SendAsync("KillUnit", unit.ID);
                     toKill.Add(unit.ID);
+                    unit.IsDead = true;
                 }
 
                 // Again, code that changes position/velocity should, in this system, tell us whether or not to inform the clients
