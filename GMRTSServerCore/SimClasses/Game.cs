@@ -58,8 +58,6 @@ namespace GMRTSServerCore.SimClasses
         /// </summary>
         internal Map Map;
 
-        object locker = new object();
-
         /// <summary>
         /// Adds users and gives them their starting units.
         /// </summary>
@@ -237,14 +235,11 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void DeleteIfCan(DeleteAction action, User user)
         {
-            lock (locker)
-            {
-                var list = GetOrderNodesToReplace(GetValidUnits(action.AffectedUnits, user), action.TargetActionID);
+            var list = GetOrderNodesToReplace(GetValidUnits(action.AffectedUnits, user), action.TargetActionID);
 
-                foreach (var node in list)
-                {
-                    node.Item1.List.Remove(node.Item1);
-                }
+            foreach (var node in list)
+            {
+                node.Item1.List.Remove(node.Item1);
             }
         }
 
@@ -255,13 +250,10 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void MoveIfCan(MoveAction action, User user)
         {
-            lock (locker)
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            foreach (Unit unit in affectedUnits)
             {
-                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
-                foreach (Unit unit in affectedUnits)
-                {
-                    unit.Orders.AddLast(new MoveOrder(action, affectedUnits, unit));
-                }
+                unit.Orders.AddLast(new MoveOrder(action, affectedUnits, unit));
             }
         }
 
@@ -273,14 +265,11 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="actionToReplace"></param>
         public void MoveIfCan(MoveAction action, User user, Guid actionToReplace)
         {
-            lock (locker)
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+            foreach (var node in nodes)
             {
-                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
-                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
-                foreach (var node in nodes)
-                {
-                    ReplaceNode(node.Item1, new MoveOrder(action, affectedUnits, node.Item2));
-                }
+                ReplaceNode(node.Item1, new MoveOrder(action, affectedUnits, node.Item2));
             }
         }
 
@@ -291,25 +280,22 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void AssistIfCan(AssistAction action, User user)
         {
-            lock (locker)
+            if (!Units.ContainsKey(action.Target))
             {
-                if (!Units.ContainsKey(action.Target))
-                {
-                    return;
-                }
+                return;
+            }
 
-                Unit targ = Units[action.Target];
+            Unit targ = Units[action.Target];
 
-                if (targ.Owner != user)
-                {
-                    return;
-                }
+            if (targ.Owner != user)
+            {
+                return;
+            }
 
-                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
-                foreach (Unit unit in affectedUnits)
-                {
-                    unit.Orders.AddLast(new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
-                }
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            foreach (Unit unit in affectedUnits)
+            {
+                unit.Orders.AddLast(new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
             }
         }
 
@@ -321,26 +307,23 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="actionToReplace"></param>
         public void AssistIfCan(AssistAction action, User user, Guid actionToReplace)
         {
-            lock (locker)
+            if (!Units.ContainsKey(action.Target))
             {
-                if (!Units.ContainsKey(action.Target))
-                {
-                    return;
-                }
+                return;
+            }
 
-                Unit targ = Units[action.Target];
+            Unit targ = Units[action.Target];
 
-                if (targ.Owner != user)
-                {
-                    return;
-                }
+            if (targ.Owner != user)
+            {
+                return;
+            }
 
-                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
-                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
-                foreach (var node in nodes)
-                {
-                    ReplaceNode(node.Item1, new AssistOrder(action.ActionID, movementCalculator) { Assister = node.Item2, Target = targ });
-                }
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+            foreach (var node in nodes)
+            {
+                ReplaceNode(node.Item1, new AssistOrder(action.ActionID, movementCalculator) { Assister = node.Item2, Target = targ });
             }
         }
 
@@ -351,25 +334,22 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void AttackIfCan(AttackAction action, User user)
         {
-            lock (locker)
+            if (!Units.ContainsKey(action.Target))
             {
-                if (!Units.ContainsKey(action.Target))
-                {
-                    return;
-                }
+                return;
+            }
 
-                Unit targ = Units[action.Target];
+            Unit targ = Units[action.Target];
 
-                if (targ.Owner == user)
-                {
-                    return;
-                }
+            if (targ.Owner == user)
+            {
+                return;
+            }
 
-                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
-                foreach (Unit unit in affectedUnits)
-                {
-                    unit.Orders.AddLast(new AttackOrder(action.ActionID, movementCalculator) { Attacker = unit, Target = targ });
-                }
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            foreach (Unit unit in affectedUnits)
+            {
+                unit.Orders.AddLast(new AttackOrder(action.ActionID, movementCalculator) { Attacker = unit, Target = targ });
             }
         }
 
@@ -380,25 +360,22 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void BuildBuildingIfCan(BuildBuildingAction action, User user)
         {
-            lock (locker)
+            if (Map[IMovementCalculator.fromVec2(action.Position, Map.TileSize)] >= ushort.MaxValue / 2)
             {
-                if (Map[IMovementCalculator.fromVec2(action.Position, Map.TileSize)] >= ushort.MaxValue / 2)
-                {
-                    return;
-                }
+                return;
+            }
 
-                if (!action.UnitIDs.Any(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user))
-                {
-                    return;
-                }
+            if (!action.UnitIDs.Any(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user))
+            {
+                return;
+            }
 
-                Unit targ = Units[action.UnitIDs.First(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user)];
+            Unit targ = Units[action.UnitIDs.First(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user)];
 
-                List<Unit> affectedUnits = new List<Unit>() { targ };
-                foreach (Unit unit in affectedUnits)
-                {
-                    unit.Orders.AddLast(new BuildBuildingOrder(action.ActionID, movementCalculator, action.BuildingType, action.Position) { Builder = targ });//new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
-                }
+            List<Unit> affectedUnits = new List<Unit>() { targ };
+            foreach (Unit unit in affectedUnits)
+            {
+                unit.Orders.AddLast(new BuildBuildingOrder(action.ActionID, movementCalculator, action.BuildingType, action.Position) { Builder = targ });//new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
             }
         }
 
@@ -410,26 +387,23 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="actionToReplace"></param>
         public void BuildBuildingIfCan(BuildBuildingAction action, User user, Guid actionToReplace)
         {
-            lock (locker)
+            if (Map[IMovementCalculator.fromVec2(action.Position, Map.TileSize)] >= ushort.MaxValue / 2)
             {
-                if (Map[IMovementCalculator.fromVec2(action.Position, Map.TileSize)] >= ushort.MaxValue / 2)
-                {
-                    return;
-                }
+                return;
+            }
 
-                if (!action.UnitIDs.Any(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user))
-                {
-                    return;
-                }
+            if (!action.UnitIDs.Any(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user))
+            {
+                return;
+            }
 
-                Unit targ = Units[action.UnitIDs.First(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user)];
+            Unit targ = Units[action.UnitIDs.First(a => Units.ContainsKey(a) && Units[a] is Builder && Units[a].Owner == user)];
 
-                List<Unit> affectedUnits = new List<Unit>() { targ };
-                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
-                foreach (var node in nodes)
-                {
-                    ReplaceNode(node.Item1, new BuildBuildingOrder(action.ActionID, movementCalculator, action.BuildingType, action.Position) { Builder = node.Item2 });//new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
-                }
+            List<Unit> affectedUnits = new List<Unit>() { targ };
+            var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+            foreach (var node in nodes)
+            {
+                ReplaceNode(node.Item1, new BuildBuildingOrder(action.ActionID, movementCalculator, action.BuildingType, action.Position) { Builder = node.Item2 });//new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
             }
         }
 
@@ -567,26 +541,23 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="actionToReplace"></param>
         public void AttackIfCan(AttackAction action, User user, Guid actionToReplace)
         {
-            lock (locker)
+            if (!Units.ContainsKey(action.Target))
             {
-                if (!Units.ContainsKey(action.Target))
-                {
-                    return;
-                }
+                return;
+            }
 
-                Unit targ = Units[action.Target];
+            Unit targ = Units[action.Target];
 
-                if (targ.Owner == user)
-                {
-                    return;
-                }
+            if (targ.Owner == user)
+            {
+                return;
+            }
 
-                List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
-                var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
-                foreach (var node in nodes)
-                {
-                    ReplaceNode(node.Item1, new AttackOrder(action.ActionID, movementCalculator) { Attacker = node.Item2, Target = targ });
-                }
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
+            foreach (var node in nodes)
+            {
+                ReplaceNode(node.Item1, new AttackOrder(action.ActionID, movementCalculator) { Attacker = node.Item2, Target = targ });
             }
         }
 
@@ -669,13 +640,9 @@ namespace GMRTSServerCore.SimClasses
         /// <returns></returns>
         private async Task UpdateBody(ulong currentMillis, float elapsedTime)
         {
-            // Updates all the units. Don't really know if we need this lock, but evidently at some point I thought we might. Better safe than sorry.
-            lock (locker)
+            foreach (Unit unit in Units.Values)
             {
-                foreach (Unit unit in Units.Values)
-                {
-                    unit.Update(currentMillis, elapsedTime);
-                }
+                unit.Update(currentMillis, elapsedTime);
             }
 
             // Sends information about the completed orders.
