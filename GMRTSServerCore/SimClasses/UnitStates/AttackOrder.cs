@@ -33,6 +33,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)
         {
             Vector2 velocity = Vector2.Zero;
+            Attacker.CombatTargetTracker.PreferredTarget = Target;
 
             // Arbitrary, hardcoded, yada yada, you know the drill.
             if ((Attacker.Position - Target.Position).LengthSquared() > 2500)
@@ -48,12 +49,10 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 // Update: Ask and you shall receive
                 velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker);
 
-                // Pew pew! Pew pew!
-                Attacker.TryShoot(Target);
-
                 // Mission accomplished. Next target, soldier!
-                if (Target.Health <= 0)
+                if (Target.IsDead)
                 {
+                    Attacker.CombatTargetTracker.PreferredTarget = null;
                     return ContOrStop.Stop;
                 }
             }
