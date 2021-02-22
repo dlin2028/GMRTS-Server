@@ -23,16 +23,6 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         }
 
         /// <summary>
-        /// Factories don't shoot.
-        /// </summary>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public override bool TryShoot(Unit target)
-        {
-            return false;
-        }
-
-        /// <summary>
         /// Basically updates the order first in the queue and completes it if it's done.
         /// </summary>
         /// <param name="currentMilliseconds"></param>
