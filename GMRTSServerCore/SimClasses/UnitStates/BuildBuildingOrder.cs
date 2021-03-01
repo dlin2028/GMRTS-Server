@@ -33,7 +33,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
 
             if ((Builder.Position - TargetPosition).LengthSquared() > 2500)
             {
-                velocity = movementCalculator.ComputeVelocity(Builder.Game, Builder, TargetPosition);
+                velocity = movementCalculator.ComputeVelocity(Builder.Game, Builder, TargetPosition, currentMilliseconds);
             }
             else
             {

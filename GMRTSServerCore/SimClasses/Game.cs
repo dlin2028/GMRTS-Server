@@ -41,7 +41,12 @@ namespace GMRTSServerCore.SimClasses
         /// <summary>
         /// Yay flowfields. The flowfields computed by the FlowfieldMovementCalculator.
         /// </summary>
-        internal Dictionary<(int x, int y), Task<byte[][]>> Flowfields = new Dictionary<(int x, int y), Task<byte[][]>>();
+        internal Dictionary<(int x, int y), (Task<byte[][]> flowfieldTask, ulong lastMillis)> Flowfields = new Dictionary<(int x, int y), (Task<byte[][]> flowfieldTask, ulong lastMillis)>();
+
+        /// <summary>
+        /// Time a flowfield can go without being used before being deleted
+        /// </summary>
+        internal ulong FlowfieldTimeout = 1000;
 
         /// <summary>
         /// The movement calculator. Yay for modularization!

@@ -38,7 +38,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             // Arbitrary, hardcoded, yada yada, you know the drill.
             if ((Attacker.Position - Target.Position).LengthSquared() > 2500)
             {
-                velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker, Target.Position);
+                velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker, Target.Position, currentMilliseconds);
             }
             else
             {

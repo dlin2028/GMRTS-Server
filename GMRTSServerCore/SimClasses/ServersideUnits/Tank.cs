@@ -29,11 +29,6 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
 
         static int dmg = 10;
 
-        /// <summary>
-        /// Store it squared because square roots for distance comparisons hurt me.
-        /// </summary>
-        static float rangeSquared = 100 * 100;
-
         public override void Update(ulong currentMilliseconds, float elapsedTime)
         {
             currentMillis = currentMilliseconds;

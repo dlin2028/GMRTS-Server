@@ -50,7 +50,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             // Arbitrary hardcoded distance. pls fix.
             if ((Assister.Position - Target.Position).LengthSquared() > 2500)
             {
-                velocity = movementCalculator.ComputeVelocity(Assister.Game, Assister, Target.Position);
+                velocity = movementCalculator.ComputeVelocity(Assister.Game, Assister, Target.Position, currentMilliseconds);
             }
             else
             {

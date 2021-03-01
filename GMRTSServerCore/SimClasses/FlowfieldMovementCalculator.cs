@@ -115,13 +115,36 @@ namespace GMRTSServerCore.SimClasses
         }
 
         /// <summary>
+        /// Cleans out expired flowfields
+        /// </summary>
+        /// <param name="game"></param>
+        /// <param name="currentMilliseconds"></param>
+        private static void ClearOutExpiredFlowfields(Game game, ulong currentMilliseconds)
+        {
+            List<(int, int)> expiredTileFlowfields = new List<(int, int)>();
+
+            foreach(var kvp in game.Flowfields)
+            {
+                if (kvp.Value.lastMillis + game.FlowfieldTimeout > currentMilliseconds)
+                {
+                    expiredTileFlowfields.Add(kvp.Key);
+                }
+            }
+
+            foreach(var key in expiredTileFlowfields)
+            {
+                game.Flowfields.Remove(key);
+            }
+        }
+
+        /// <summary>
         /// Pathfinding calculation.
         /// </summary>
         /// <param name="game"></param>
         /// <param name="unit"></param>
         /// <param name="destination"></param>
         /// <returns></returns>
-        public Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination)
+        public Vector2 ComputeVelocity(Game game, Unit unit, Vector2 destination, ulong currentMilliseconds)
         {
             Vector2 flowfieldVel;
             lock (game.FlowfieldLocker)
@@ -129,20 +152,23 @@ namespace GMRTSServerCore.SimClasses
                 (int x, int y) tile = IMovementCalculator.fromVec2(destination, game.Map.TileSize);
                 if (!game.Flowfields.ContainsKey(tile))
                 {
-                    game.Flowfields[tile] = ComputeFlowField(tile.x, tile.y, game.Map);
+                    ClearOutExpiredFlowfields(game, currentMilliseconds);
+
+                    game.Flowfields[tile] = (ComputeFlowField(tile.x, tile.y, game.Map), currentMilliseconds);
                     flowfieldVel = Vector2.Zero;
                 }
                 
                 // Ooooh, Tasks, look at me. Maybe I even used them right. (This was before I started doing research for my async presentation.)
                 // This is basically for if it is still calculating, we want the unit to idle.
                 // It's better than freezing the game.
-                else if (!game.Flowfields[tile].IsCompleted)
+                else if (!game.Flowfields[tile].flowfieldTask.IsCompleted)
                 {
                     flowfieldVel = Vector2.Zero;
                 }
                 else
                 {
-                    byte[][] res = game.Flowfields[tile].Result;
+                    byte[][] res = game.Flowfields[tile].flowfieldTask.Result;
+                    game.Flowfields[tile] = (game.Flowfields[tile].flowfieldTask, currentMilliseconds);
                     (int x, int y) currTile = IMovementCalculator.fromVec2(unit.Position, game.Map.TileSize);
                     flowfieldVel = flowfieldVels[res[currTile.x][currTile.y]];
                 }
