@@ -31,7 +31,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             set
             {
                 // Update the unit lookup by position.
-                Game.UpdateUnitLookup(this, value);
+                Owner.CurrentGame.UpdateUnitLookup(this, value);
                 pos = value;
             }
         }
@@ -59,11 +59,6 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         public float VelocityMagnitude = 20f;
 
         public abstract void Shoot(Unit target);
-
-        /// <summary>
-        /// We want a reference to our game.
-        /// </summary>
-        public Game Game { get; set; }
 
         /// <summary>
         /// Oh god this is awful. Just, like, don't look and pretend it's not here.
@@ -123,7 +118,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             }
 
             // Tell the client.
-            Game.QueueActionOver(this, Orders.First.Value.ID);
+            Owner.CurrentGame.QueueActionOver(this, Orders.First.Value.ID);
 
             Orders.RemoveFirst();
         }
@@ -151,17 +146,16 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// </summary>
         public User Owner { get; set; }
 
-        public Unit(Guid id, User owner, Game game)
+        public Unit(Guid id, User owner)
         {
             ID = id;
             Orders = new LinkedList<IUnitOrder>();
             this.Owner = owner;
-            this.Game = game;
             IdleOrder = new IdleOrder(this);
 
             // Bad ugly *bonk*
             VisibilityChecker = new EuclideanDistanceLineOfSightChecker(this);
-            CombatTargetTracker = new StandardCombatTargetTracker(this, VisibilityChecker, game.unitPositionLookup);
+            CombatTargetTracker = new StandardCombatTargetTracker(this, VisibilityChecker, Owner.CurrentGame.unitPositionLookup);
         }
 
         /// <summary>

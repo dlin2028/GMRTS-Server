@@ -17,7 +17,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// It's a linked list so we can remove from the middle.
         /// </summary>
         internal LinkedList<UnitConstructionOrder> ConstructionOrders;
-        public Factory(Guid id, User owner, Game game) : base(id, owner, game)
+        public Factory(Guid id, User owner) : base(id, owner)
         {
             ConstructionOrders = new LinkedList<UnitConstructionOrder>();
         }

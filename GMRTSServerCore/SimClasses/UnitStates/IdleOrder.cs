@@ -28,7 +28,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         /// <returns></returns>
         public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)
         {
-            Vector2 velocity = Unit.Game.movementCalculator.ComputeVelocity(Unit.Game, Unit);
+            Vector2 velocity = Unit.Owner.CurrentGame.movementCalculator.ComputeVelocity(Unit.Owner.CurrentGame, Unit);
 
             Unit.Position += velocity * elapsedTime;
             if ((velocity - LastVel).LengthSquared() >= 0.001)

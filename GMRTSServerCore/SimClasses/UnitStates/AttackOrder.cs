@@ -38,7 +38,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             // Arbitrary, hardcoded, yada yada, you know the drill.
             if ((Attacker.Position - Target.Position).LengthSquared() > 2500)
             {
-                velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker, Target.Position, currentMilliseconds);
+                velocity = movementCalculator.ComputeVelocity(Attacker.Owner.CurrentGame, Attacker, Target.Position, currentMilliseconds);
             }
             else
             {
@@ -47,7 +47,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 // This should be a method on the movement calculator for units that are not actively pathing (maybe idle?)
                 // Maybe something like this?
                 // Update: Ask and you shall receive
-                velocity = movementCalculator.ComputeVelocity(Attacker.Game, Attacker);
+                velocity = movementCalculator.ComputeVelocity(Attacker.Owner.CurrentGame, Attacker);
 
                 // Mission accomplished. Next target, soldier!
                 if (Target.IsDead)

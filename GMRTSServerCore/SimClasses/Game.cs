@@ -79,7 +79,7 @@ namespace GMRTSServerCore.SimClasses
             user.Money = 100;
             user.Mineral = 100;
 
-            Unit unit = new Builder(Guid.NewGuid(), user, this);
+            Unit unit = new Builder(Guid.NewGuid(), user);
             user.Units.Add(unit);
             Units.Add(unit.ID, unit);
             user.CurrentGame = this;
@@ -176,9 +176,9 @@ namespace GMRTSServerCore.SimClasses
             user.Mineral -= Prices.BuildingPriceData[buildingType].RequiredMineral;
             Building building = buildingType switch
             {
-                BuildingType.Factory => new Factory(Guid.NewGuid(), user, user.CurrentGame),
-                BuildingType.Mine => new Mine(Guid.NewGuid(), user, user.CurrentGame),
-                BuildingType.Supermarket => new Supermarket(Guid.NewGuid(), user, user.CurrentGame),
+                BuildingType.Factory => new Factory(Guid.NewGuid(), user),
+                BuildingType.Mine => new Mine(Guid.NewGuid(), user),
+                BuildingType.Supermarket => new Supermarket(Guid.NewGuid(), user),
                 _ => throw new Exception(),
             };
 
@@ -467,10 +467,10 @@ namespace GMRTSServerCore.SimClasses
             switch (unitType)
             {
                 case GMRTSClasses.Units.MobileUnitType.Tank:
-                    unit = new Tank(Guid.NewGuid(), owner, this);
+                    unit = new Tank(Guid.NewGuid(), owner);
                     break;
                 case GMRTSClasses.Units.MobileUnitType.Builder:
-                    unit = new Builder(Guid.NewGuid(), owner, this);
+                    unit = new Builder(Guid.NewGuid(), owner);
                     break;
                 default:
                     throw new Exception("Spawning units of this type is unimplemented");

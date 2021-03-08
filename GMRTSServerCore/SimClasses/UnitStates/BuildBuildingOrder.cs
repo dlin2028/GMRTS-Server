@@ -33,7 +33,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
 
             if ((Builder.Position - TargetPosition).LengthSquared() > 2500)
             {
-                velocity = movementCalculator.ComputeVelocity(Builder.Game, Builder, TargetPosition, currentMilliseconds);
+                velocity = movementCalculator.ComputeVelocity(Builder.Owner.CurrentGame, Builder, TargetPosition, currentMilliseconds);
             }
             else
             {
@@ -42,11 +42,11 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 // This should be a method on the movement calculator for units that are not actively pathing (maybe idle?)
                 // Maybe something like this?
                 // Update: Ask and you shall receive
-                velocity = movementCalculator.ComputeVelocity(Builder.Game, Builder);
+                velocity = movementCalculator.ComputeVelocity(Builder.Owner.CurrentGame, Builder);
 
                 if (Builder.Owner.Money >= RequiredMoney && Builder.Owner.Mineral >= RequiredMineral)
                 {
-                    Builder.Game.SpawnBuildingAndChargeUser(Builder.Owner, FinalType, TargetPosition);
+                    Builder.Owner.CurrentGame.SpawnBuildingAndChargeUser(Builder.Owner, FinalType, TargetPosition);
                     return ContOrStop.Stop;
                 }
             }

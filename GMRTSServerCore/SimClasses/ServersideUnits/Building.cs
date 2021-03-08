@@ -10,7 +10,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
     /// </summary>
     internal class Building : Unit
     {
-        public Building(Guid id, User owner, Game game) : base(id, owner, game)
+        public Building(Guid id, User owner) : base(id, owner)
         {
             Health = 100;
         }
@@ -21,6 +21,9 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public override void Shoot(Unit target) { }
+        public override void Shoot(Unit target)
+        {
+            throw new InvalidOperationException("Buildings can't shoot.");
+        }
     }
 }

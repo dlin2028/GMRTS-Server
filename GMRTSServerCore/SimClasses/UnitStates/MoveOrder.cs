@@ -46,7 +46,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         {
             OriginalUnits = originalUnits;
             Target = act.Position;
-            TargetSquare = IMovementCalculator.fromVec2(Target, unit.Game.Map.TileSize);
+            TargetSquare = IMovementCalculator.fromVec2(Target, unit.Owner.CurrentGame.Map.TileSize);
 
             Unit = unit;
             ID = act.ActionID;
@@ -61,12 +61,12 @@ namespace GMRTSServerCore.SimClasses.UnitStates
         /// <returns></returns>
         public ContOrStop Update(ulong currentMilliseconds, float elapsedTime)
         {
-            Vector2 vel = Unit.Game.movementCalculator.ComputeVelocity(Unit.Game, Unit, Target, currentMilliseconds);
+            Vector2 vel = Unit.Owner.CurrentGame.movementCalculator.ComputeVelocity(Unit.Owner.CurrentGame, Unit, Target, currentMilliseconds);
             //Vector2 diffVec = Target - Unit.Position;
             //if(diffVec.LengthSquared() <= vel.LengthSquared() * 0.001f)
 
             // Same grid square == close enough
-            if (IMovementCalculator.fromVec2(Unit.Position, Unit.Game.Map.TileSize) == TargetSquare)
+            if (IMovementCalculator.fromVec2(Unit.Position, Unit.Owner.CurrentGame.Map.TileSize) == TargetSquare)
             {
                 //Unit.Position = Target;
 

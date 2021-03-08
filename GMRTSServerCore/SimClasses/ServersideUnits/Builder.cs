@@ -11,16 +11,19 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
     /// </summary>
     internal class Builder : Unit
     {
-        public Builder(Guid id, User owner, Game game) : base(id, owner, game)
+        public Builder(Guid id, User owner) : base(id, owner)
         {
             Health = 100;
         }
 
         /// <summary>
-        /// Very WIP system. Builders cannot shoot, so this always just returns.
+        /// Very WIP system. Builders cannot shoot.
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public override void Shoot(Unit target) { }
+        public override void Shoot(Unit target)
+        {
+            throw new InvalidOperationException("Builders can't attack.");
+        }
     }
 }

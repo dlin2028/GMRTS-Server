@@ -15,7 +15,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         /// For purposes of handling shot cooldown.
         /// </summary>
         DateTime lastShot = DateTime.UnixEpoch;
-        public Tank(Guid id, User owner, Game game) : base(id, owner, game)
+        public Tank(Guid id, User owner) : base(id, owner)
         {
 
         }

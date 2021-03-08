@@ -25,9 +25,8 @@ namespace GMRTSServerCore.SimClasses
 
         /// <summary>
         /// Lmao the one thing it would probably be okay to hardcode.
-        /// Also this should be a const at least but whatever.
         /// </summary>
-        static float RadTwo = 1.414213562373f;
+        const float RadTwo = 1.414213562373f;
 
         /// <summary>
         /// Nonpathfinding computation.

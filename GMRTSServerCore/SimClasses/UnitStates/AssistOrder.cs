@@ -50,7 +50,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             // Arbitrary hardcoded distance. pls fix.
             if ((Assister.Position - Target.Position).LengthSquared() > 2500)
             {
-                velocity = movementCalculator.ComputeVelocity(Assister.Game, Assister, Target.Position, currentMilliseconds);
+                velocity = movementCalculator.ComputeVelocity(Assister.Owner.CurrentGame, Assister, Target.Position, currentMilliseconds);
             }
             else
             {
@@ -59,10 +59,10 @@ namespace GMRTSServerCore.SimClasses.UnitStates
                 // This should be a method on the movement calculator for units that are not actively pathing (maybe idle?)
                 // Maybe something like this?
                 // Update: Ask and you shall receive
-                velocity = movementCalculator.ComputeVelocity(Assister.Game, Assister);
+                velocity = movementCalculator.ComputeVelocity(Assister.Owner.CurrentGame, Assister);
 
                 // If you're too late to help in time, no purpose in going at all.
-                if (Target.Health <= 0)
+                if (Target.IsDead)
                 {
                     return ContOrStop.Stop;
                 }

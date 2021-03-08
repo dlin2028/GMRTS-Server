@@ -12,7 +12,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
     {
         public const float MoneyPerSecond = 10f;
 
-        public Supermarket(Guid id, User owner, Game game) : base(id, owner, game)
+        public Supermarket(Guid id, User owner) : base(id, owner)
         {
         }
 

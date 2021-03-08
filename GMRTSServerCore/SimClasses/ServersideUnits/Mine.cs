@@ -12,7 +12,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
     {
         public const float MineralPerSecond = 10f;
 
-        public Mine(Guid id, User owner, Game game) : base(id, owner, game)
+        public Mine(Guid id, User owner) : base(id, owner)
         {
         }
 
