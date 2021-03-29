@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GMRTSServerCore.SimClasses.ServersideUnits.Interfaces;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +11,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
     /// <summary>
     /// Represents tanks.
     /// </summary>
-    internal class Tank : Unit
+    internal class Tank : Unit, IMobileUnit
     {
         /// <summary>
         /// For purposes of handling shot cooldown.

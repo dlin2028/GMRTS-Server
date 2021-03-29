@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GMRTSServerCore.SimClasses.ServersideUnits.Interfaces;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +11,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
     /// <summary>
     /// The type representing a Builder unit.
     /// </summary>
-    internal class Builder : Unit
+    internal class Builder : Unit, IMobileUnit
     {
         public Builder(Guid id, User owner) : base(id, owner)
         {

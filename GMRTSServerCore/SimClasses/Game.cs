@@ -8,6 +8,7 @@ using GMRTSClasses.STCTransferData;
 
 using GMRTSServerCore.Hubs;
 using GMRTSServerCore.SimClasses.ServersideUnits;
+using GMRTSServerCore.SimClasses.ServersideUnits.Interfaces;
 using GMRTSServerCore.SimClasses.UnitStates;
 
 using Microsoft.AspNetCore.SignalR;
@@ -142,7 +143,7 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="ids"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public List<Unit> GetValidUnits(List<Guid> ids, User user)
+        public List<Unit> GetValidUnits(List<Guid> ids, User user, bool requireMobile)
         {
             List<Unit> units = new List<Unit>(ids.Count);
             foreach (Guid unitID in ids)
@@ -154,6 +155,11 @@ namespace GMRTSServerCore.SimClasses
 
                 Unit unit = Units[unitID];
                 if (unit.Owner != user)
+                {
+                    continue;
+                }
+
+                if (requireMobile && !(unit is IMobileUnit))
                 {
                     continue;
                 }
@@ -240,7 +246,7 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void DeleteIfCan(DeleteAction action, User user)
         {
-            var list = GetOrderNodesToReplace(GetValidUnits(action.AffectedUnits, user), action.TargetActionID);
+            var list = GetOrderNodesToReplace(GetValidUnits(action.AffectedUnits, user, false), action.TargetActionID);
 
             foreach (var node in list)
             {
@@ -255,7 +261,7 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         public void MoveIfCan(MoveAction action, User user)
         {
-            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user, true);
             foreach (Unit unit in affectedUnits)
             {
                 unit.Orders.AddLast(new MoveOrder(action, affectedUnits, unit));
@@ -270,7 +276,7 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="actionToReplace"></param>
         public void MoveIfCan(MoveAction action, User user, Guid actionToReplace)
         {
-            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user, true);
             var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
             foreach (var node in nodes)
             {
@@ -297,7 +303,7 @@ namespace GMRTSServerCore.SimClasses
                 return;
             }
 
-            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user, true);
             foreach (Unit unit in affectedUnits)
             {
                 unit.Orders.AddLast(new AssistOrder(action.ActionID, movementCalculator) { Assister = unit, Target = targ });
@@ -324,7 +330,7 @@ namespace GMRTSServerCore.SimClasses
                 return;
             }
 
-            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user, true);
             var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
             foreach (var node in nodes)
             {
@@ -351,7 +357,7 @@ namespace GMRTSServerCore.SimClasses
                 return;
             }
 
-            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user, true);
             foreach (Unit unit in affectedUnits)
             {
                 unit.Orders.AddLast(new AttackOrder(action.ActionID, movementCalculator) { Attacker = unit, Target = targ });
@@ -558,7 +564,7 @@ namespace GMRTSServerCore.SimClasses
                 return;
             }
 
-            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user);
+            List<Unit> affectedUnits = GetValidUnits(action.UnitIDs, user, true);
             var nodes = GetOrderNodesToReplace(affectedUnits, actionToReplace);
             foreach (var node in nodes)
             {
