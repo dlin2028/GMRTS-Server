@@ -76,6 +76,8 @@ namespace GMRTSServerCore.SimClasses
                 return false;
             }
 
+            user.CurrentGame = this;
+
             Users.Add(user);
             user.Money = 100;
             user.Mineral = 100;
@@ -83,7 +85,7 @@ namespace GMRTSServerCore.SimClasses
             Unit unit = new Builder(Guid.NewGuid(), user);
             user.Units.Add(unit);
             Units.Add(unit.ID, unit);
-            user.CurrentGame = this;
+            
             return true;
         }
 
