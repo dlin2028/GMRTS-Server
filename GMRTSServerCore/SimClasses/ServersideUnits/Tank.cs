@@ -19,7 +19,7 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
         DateTime lastShot = DateTime.UnixEpoch;
         public Tank(Guid id, User owner) : base(id, owner)
         {
-
+            Health = 100;
         }
 
         /// <summary>
