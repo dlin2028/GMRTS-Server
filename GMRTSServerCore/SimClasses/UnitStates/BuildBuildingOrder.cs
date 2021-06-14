@@ -19,7 +19,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
 
         private Vector2 lastVel = new Vector2(0, 0);
 
-        public BuildingType FinalType;
+        public GMRTSClasses.Units.BuildingType FinalType;
         public Vector2 TargetPosition;
 
         public float RequiredMoney;
@@ -64,7 +64,7 @@ namespace GMRTSServerCore.SimClasses.UnitStates
             return ContOrStop.Continue;
         }
 
-        public BuildBuildingOrder(Guid id, IMovementCalculator movementCalculator, BuildingType buildingType, Vector2 buildingPos)
+        public BuildBuildingOrder(Guid id, IMovementCalculator movementCalculator, GMRTSClasses.Units.BuildingType buildingType, Vector2 buildingPos)
         {
             ID = id;
             this.movementCalculator = movementCalculator;

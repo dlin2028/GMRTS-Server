@@ -178,15 +178,15 @@ namespace GMRTSServerCore.SimClasses
         /// <param name="user"></param>
         /// <param name="buildingType"></param>
         /// <param name="position"></param>
-        internal void SpawnBuildingAndChargeUser(User user, BuildingType buildingType, Vector2 position)
+        internal void SpawnBuildingAndChargeUser(User user, GMRTSClasses.Units.BuildingType buildingType, Vector2 position)
         {
             user.Money -= Prices.BuildingPriceData[buildingType].RequiredMoney;
             user.Mineral -= Prices.BuildingPriceData[buildingType].RequiredMineral;
             Building building = buildingType switch
             {
-                BuildingType.Factory => new Factory(Guid.NewGuid(), user),
-                BuildingType.Mine => new Mine(Guid.NewGuid(), user),
-                BuildingType.Supermarket => new Supermarket(Guid.NewGuid(), user),
+                GMRTSClasses.Units.BuildingType.Factory => new Factory(Guid.NewGuid(), user),
+                GMRTSClasses.Units.BuildingType.Mine => new Mine(Guid.NewGuid(), user),
+                GMRTSClasses.Units.BuildingType.Supermarket => new Supermarket(Guid.NewGuid(), user),
                 _ => throw new Exception(),
             };
 
