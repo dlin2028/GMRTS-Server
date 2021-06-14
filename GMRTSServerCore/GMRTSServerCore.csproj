@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GMRTSClasses\GMRTSClasses.csproj" />
+    <ProjectReference Include="..\GMRTS-Shared\GMRTSClasses\GMRTSClasses.csproj" />
   </ItemGroup>
 
   <ItemGroup>
