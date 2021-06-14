@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GMRTSServerCore", "GMRTSSer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GMRTSClasses", "GMRTS-Shared\GMRTSClasses\GMRTSClasses.csproj", "{B2DBD442-7528-472C-8E01-413BD70A9010}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GMRTSClient", "GMRTS-Client\GMRTSClient\GMRTSClient.csproj", "{F141DE56-13BE-4CE4-B765-2F9E901200BC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{B2DBD442-7528-472C-8E01-413BD70A9010}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2DBD442-7528-472C-8E01-413BD70A9010}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2DBD442-7528-472C-8E01-413BD70A9010}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F141DE56-13BE-4CE4-B765-2F9E901200BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F141DE56-13BE-4CE4-B765-2F9E901200BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F141DE56-13BE-4CE4-B765-2F9E901200BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F141DE56-13BE-4CE4-B765-2F9E901200BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
