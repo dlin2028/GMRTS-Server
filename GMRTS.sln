@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GMRTSServerCore", "GMRTSServerCore\GMRTSServerCore.csproj", "{928880EB-45D3-4C54-8731-E6282F9FFB6E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GMRTSClasses", "GMRTS-Shared\GMRTSClasses\GMRTSClasses.csproj", "{B2DBD442-7528-472C-8E01-413BD70A9010}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{928880EB-45D3-4C54-8731-E6282F9FFB6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{928880EB-45D3-4C54-8731-E6282F9FFB6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{928880EB-45D3-4C54-8731-E6282F9FFB6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2DBD442-7528-472C-8E01-413BD70A9010}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2DBD442-7528-472C-8E01-413BD70A9010}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2DBD442-7528-472C-8E01-413BD70A9010}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2DBD442-7528-472C-8E01-413BD70A9010}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
