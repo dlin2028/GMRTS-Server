@@ -48,6 +48,8 @@ namespace GMRTSServerCore.SimClasses.ServersideUnits
             target.Health -= dmg;
             target.HealthUpdate = new GMRTSClasses.STCTransferData.ChangingData<float>(currentMillis, target.Health, 0);
             target.UpdateHealth = true;
+            
+            Owner.CurrentGame.SendShotToClient(this, target, (float)dmg);
         }
     }
 }
