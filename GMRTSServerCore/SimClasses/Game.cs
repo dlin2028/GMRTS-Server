@@ -132,6 +132,8 @@ namespace GMRTSServerCore.SimClasses
 
         private List<Unit> ToSpawn = new List<Unit>();
         private ConcurrentBag<(User, OrderCompleted)> OrderCompletedsToSend = new ConcurrentBag<(User, OrderCompleted)>();
+        
+        private ConcurrentBag<(Unit, Unit, float)> ShotsToSend = new ConcurrentBag<(Unit, Unit, float)>();
 
         private void Remove(Unit unit)
         {
@@ -583,6 +585,17 @@ namespace GMRTSServerCore.SimClasses
         {
             ActionOversToSend.Add((unit, actionID));
         }
+        
+        /// <summary>
+        /// Schedules information about a shot firing to be sent next update.
+        /// </summary>
+        /// <param name="shooter">The unit that fired the shot</param>
+        /// <param name="shot">The unit that got shot. Shots don't miss</param>
+        /// <param name="damage">The amount of damage dealt</param>
+        public void SendShotToClient(Unit shooter, Unit shot, float damage)
+        {
+            ShotsToSend.Add((shooter, shot, damage));
+        }
 
         /// <summary>
         /// Schedules the start of the game.
@@ -681,12 +694,22 @@ namespace GMRTSServerCore.SimClasses
                     await Context.Clients.Client(user.ID).SendAsync("AddUnit", new UnitSpawnData() { ID = unit.ID, OwnerUsername = unit.Owner.CurrentUsername, Type = unit.GetType().Name });
                 }
             }
+            
+            // Send shots to the client
+            foreach ((Unit shooter, Unit shot, float damage) in ShotsToSend)
+            {
+                foreach (User user in Users)
+                {
+                    await Context.Clients.Client(user.ID).SendAsync("ShotFired", new ShotFiredData() { ShooterID = shooter.ID, ShotUnitID = shot.ID, Damage = damage });
+                }
+            }
 
             // Clears the lists we just went through.
             ToSpawn.Clear();
 
             ActionOversToSend.Clear();
             OrderCompletedsToSend.Clear();
+            ShotsToSend.Clear();
 
             // Updates the users on their resources. This is temporary! In the future, it should only send it when something uses a resource or when the rate of production changes.
             foreach (User user in Users)
